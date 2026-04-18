@@ -42,12 +42,16 @@ public abstract class Inimigo extends Criatura {
 
     public abstract String getPerfilCombate();
 
+    public abstract int getExperienciaConcedida();
+
     public String getFichaCombate() {
         return getNome()
             + " - "
             + getTitulo()
             + " | Perfil: "
-            + getPerfilCombate();
+            + getPerfilCombate()
+            + " | Recompensa XP: "
+            + getExperienciaConcedida();
     }
 
     protected String getNomeAtaqueBasico() {

@@ -18,13 +18,28 @@ import itens.PergaminhoForca;
 import itens.PocaoCura;
 
 public class Jogador extends Criatura {
-    private static final int CHANCE_BLOQUEIO_TOTAL = 20;
-    private static final int CHANCE_PARRY = 10;
+    private static final int CHANCE_BLOQUEIO_TOTAL_BASE = 20;
+    private static final int CHANCE_PARRY_BASE = 10;
+    private static final int EXPERIENCIA_INICIAL_PROXIMO_NIVEL = 120;
+    private static final int AUMENTO_VIDA_POR_NIVEL = 70;
+    private static final int AUMENTO_DANO_POR_NIVEL = 12;
+    private static final int AUMENTO_CRITICO_POR_NIVEL = 4;
+    private static final double AUMENTO_MULTIPLICADOR_CRITICO_POR_NIVEL = 0.15;
+    private static final int AUMENTO_BLOQUEIO_POR_NIVEL = 3;
+    private static final int AUMENTO_PARRY_POR_NIVEL = 2;
+    private static final int AUMENTO_ESCUDO_TEMPORARIO_POR_NIVEL = 8;
 
     private final Inventario inventario;
+    private int nivel;
+    private int experienciaAtual;
+    private int experienciaTotal;
+    private int experienciaProximoNivel;
     private int bonusDano;
     private int bonusChanceCritico;
     private double bonusMultiplicadorCritico;
+    private int bonusBloqueioTotal;
+    private int bonusParry;
+    private int bonusEscudoTemporario;
     private boolean defendendo;
     private int recargaHabilidadeEspecial;
     private int indiceUltimaArmaUsada;
@@ -60,6 +75,8 @@ public class Jogador extends Criatura {
                 new PergaminhoCritico(20, 0.5)
             }
         );
+        this.nivel = 1;
+        this.experienciaProximoNivel = EXPERIENCIA_INICIAL_PROXIMO_NIVEL;
         this.indiceArmaDeGuarda = 0;
     }
 
@@ -92,8 +109,8 @@ public class Jogador extends Criatura {
         this.defendendo = true;
         this.indiceArmaDeGuarda = indiceArma;
         Arma armaDefensiva = getArmaDefensivaAtiva();
-        int chanceBloqueio = CHANCE_BLOQUEIO_TOTAL + armaDefensiva.getBonusBloqueioTotal();
-        int chanceParry = CHANCE_PARRY + armaDefensiva.getBonusParry();
+        int chanceBloqueio = getChanceBloqueioTotalComArma(armaDefensiva);
+        int chanceParry = getChanceParryComArma(armaDefensiva);
         narrar(
             "usou Postura Defensiva com "
                 + armaDefensiva.getNomeExibicao()
@@ -118,6 +135,28 @@ public class Jogador extends Criatura {
 
     public String getDescricaoHabilidadeEspecial() {
         return "Golpe Heroico - causa 180 + bonus de dano e entra em recarga por 3 turnos";
+    }
+
+    public String getResumoProgressao() {
+        return "Nivel "
+            + this.nivel
+            + " | XP "
+            + this.experienciaAtual
+            + "/"
+            + this.experienciaProximoNivel
+            + " | Vida maxima "
+            + getVidaMaxima()
+            + " | Bonus dano +"
+            + this.bonusDano
+            + " | Critico +"
+            + this.bonusChanceCritico
+            + "% | Multiplicador critico +"
+            + this.bonusMultiplicadorCritico
+            + " | Bloqueio +"
+            + this.bonusBloqueioTotal
+            + "% | Parry +"
+            + this.bonusParry
+            + "%";
     }
 
     public void avancarTurno() {
@@ -155,8 +194,8 @@ public class Jogador extends Criatura {
         if (this.defendendo) {
             this.defendendo = false;
             Arma armaDefensiva = getArmaDefensivaAtiva();
-            int chanceParry = CHANCE_PARRY + armaDefensiva.getBonusParry();
-            int chanceBloqueioTotal = CHANCE_BLOQUEIO_TOTAL + armaDefensiva.getBonusBloqueioTotal();
+            int chanceParry = getChanceParryComArma(armaDefensiva);
+            int chanceBloqueioTotal = getChanceBloqueioTotalComArma(armaDefensiva);
 
             if (sortearChance(chanceParry) && atacante != null) {
                 narrar("executou um parry perfeito. Bloqueou todo o dano e respondera com contra-ataque critico.");
@@ -218,8 +257,37 @@ public class Jogador extends Criatura {
     }
 
     public void aplicarEscudoTemporario(int valor) {
-        this.escudoTemporario += valor;
-        narrar("recebeu um escudo temporario de " + valor + ".");
+        int valorFinal = valor + this.bonusEscudoTemporario;
+        this.escudoTemporario += valorFinal;
+        narrar("recebeu um escudo temporario de " + valorFinal + ".");
+    }
+
+    public int ganharExperiencia(int experiencia) {
+        int niveisGanhos = 0;
+        this.experienciaAtual += experiencia;
+        this.experienciaTotal += experiencia;
+        narrar("ganhou " + experiencia + " de experiencia.");
+
+        while (this.experienciaAtual >= this.experienciaProximoNivel) {
+            this.experienciaAtual -= this.experienciaProximoNivel;
+            subirNivel();
+            niveisGanhos++;
+        }
+
+        narrar("agora esta em " + getResumoProgressao() + ".");
+        return niveisGanhos;
+    }
+
+    public int getNivel() {
+        return this.nivel;
+    }
+
+    public int getExperienciaAtual() {
+        return this.experienciaAtual;
+    }
+
+    public int getExperienciaProximoNivel() {
+        return this.experienciaProximoNivel;
     }
 
     private boolean sortearChance(int chance) {
@@ -245,5 +313,35 @@ public class Jogador extends Criatura {
         }
 
         return this.inventario.getArma(this.indiceUltimaArmaUsada);
+    }
+
+    private void subirNivel() {
+        this.nivel++;
+        this.experienciaProximoNivel = calcularExperienciaProximoNivel();
+        aumentarVidaMaxima(AUMENTO_VIDA_POR_NIVEL);
+        restaurarVidaTotal();
+        this.bonusDano += AUMENTO_DANO_POR_NIVEL;
+        this.bonusChanceCritico += AUMENTO_CRITICO_POR_NIVEL;
+        this.bonusMultiplicadorCritico += AUMENTO_MULTIPLICADOR_CRITICO_POR_NIVEL;
+        this.bonusBloqueioTotal += AUMENTO_BLOQUEIO_POR_NIVEL;
+        this.bonusParry += AUMENTO_PARRY_POR_NIVEL;
+        this.bonusEscudoTemporario += AUMENTO_ESCUDO_TEMPORARIO_POR_NIVEL;
+        narrar(
+            "subiu para o nivel "
+                + this.nivel
+                + ". Atributos aumentados e vida restaurada completamente."
+        );
+    }
+
+    private int calcularExperienciaProximoNivel() {
+        return EXPERIENCIA_INICIAL_PROXIMO_NIVEL + ((this.nivel - 1) * 80);
+    }
+
+    private int getChanceBloqueioTotalComArma(Arma armaDefensiva) {
+        return CHANCE_BLOQUEIO_TOTAL_BASE + this.bonusBloqueioTotal + armaDefensiva.getBonusBloqueioTotal();
+    }
+
+    private int getChanceParryComArma(Arma armaDefensiva) {
+        return CHANCE_PARRY_BASE + this.bonusParry + armaDefensiva.getBonusParry();
     }
 }

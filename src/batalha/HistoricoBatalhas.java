@@ -1,5 +1,6 @@
 package batalha;
 
+import combate.LogCombate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,10 +20,10 @@ public class HistoricoBatalhas {
     }
 
     public void exibirResumo() {
-        System.out.println();
-        System.out.println("Historico de batalhas:");
+        LogCombate.evento("");
+        LogCombate.evento("Historico de batalhas:");
         for (int i = 0; i < this.batalhas.size(); i++) {
-            System.out.println((i + 1) + " - " + this.batalhas.get(i).getResumo());
+            LogCombate.evento((i + 1) + " - " + this.batalhas.get(i).getResumo());
         }
     }
 }

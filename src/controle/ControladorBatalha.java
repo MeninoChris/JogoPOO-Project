@@ -163,6 +163,8 @@ public class ControladorBatalha {
     private void exibirPreparacaoPreBatalha(Jogador jogador) {
         LogCombate.evento("");
         LogCombate.evento("Resumo de preparacao do jogador:");
+        LogCombate.evento("Progressao:");
+        LogCombate.evento(jogador.getResumoProgressao());
         LogCombate.evento("Habilidade especial:");
         LogCombate.evento("1 - " + jogador.getDescricaoHabilidadeEspecial());
 

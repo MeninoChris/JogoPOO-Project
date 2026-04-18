@@ -62,6 +62,11 @@ public class Malignus extends Inimigo {
     }
 
     @Override
+    public int getExperienciaConcedida() {
+        return 180;
+    }
+
+    @Override
     protected String getNomeAtaqueBasico() {
         return "Garra Maldita";
     }

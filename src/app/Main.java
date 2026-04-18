@@ -2,6 +2,7 @@ package app;
 
 import batalha.Batalha;
 import batalha.HistoricoBatalhas;
+import combate.LogCombate;
 import controle.ControladorBatalha;
 import personagens.Demonium;
 import personagens.Inimigo;
@@ -36,5 +37,6 @@ public class Main {
         }
 
         historicoBatalhas.exibirResumo();
+        LogCombate.evento("Estado final do jogador: " + jogador.getResumoProgressao());
     }
 }

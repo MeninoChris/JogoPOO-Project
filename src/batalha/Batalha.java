@@ -11,6 +11,10 @@ public class Batalha {
     private final Inimigo inimigo;
     private Criatura vencedor;
     private int rodadas;
+    private int experienciaRecebida;
+    private int niveisGanhos;
+    private int nivelInicialJogador;
+    private int nivelFinalJogador;
 
     public Batalha(Jogador jogador, Inimigo inimigo) {
         this.jogador = jogador;
@@ -18,10 +22,12 @@ public class Batalha {
     }
 
     public void executar(ControladorBatalha controladorBatalha) {
+        this.nivelInicialJogador = this.jogador.getNivel();
         LogCombate.titulo("#####################");
         LogCombate.titulo("A Grande Batalha");
         LogCombate.titulo("#####################");
         LogCombate.evento("Desafiante inimigo: " + this.inimigo.getFichaCombate());
+        LogCombate.evento("Status do jogador: " + this.jogador.getResumoProgressao());
 
         this.jogador.fraseApresentacao();
         this.inimigo.fraseApresentacao();
@@ -55,6 +61,7 @@ public class Batalha {
         }
 
         definirVencedor();
+        aplicarRecompensas();
         exibirResultado();
     }
 
@@ -69,7 +76,13 @@ public class Batalha {
             + " - vencedor: "
             + nomeVencedor
             + " - rodadas: "
-            + this.rodadas;
+            + this.rodadas
+            + " - XP: "
+            + this.experienciaRecebida
+            + " - nivel: "
+            + this.nivelInicialJogador
+            + " -> "
+            + this.nivelFinalJogador;
     }
 
     private void definirVencedor() {
@@ -85,10 +98,28 @@ public class Batalha {
         if (this.vencedor == this.jogador) {
             this.inimigo.fraseMorte();
             LogCombate.evento(this.jogador.getNome() + " venceu!");
+            LogCombate.evento(
+                "Recompensa: "
+                    + this.experienciaRecebida
+                    + " XP"
+                    + (this.niveisGanhos > 0 ? " | Niveis ganhos: " + this.niveisGanhos : "")
+            );
             return;
         }
 
         this.jogador.fraseMorte();
         LogCombate.evento(this.inimigo.getNome() + " venceu!");
+    }
+
+    private void aplicarRecompensas() {
+        this.nivelFinalJogador = this.jogador.getNivel();
+        if (this.vencedor != this.jogador) {
+            this.experienciaRecebida = 0;
+            return;
+        }
+
+        this.experienciaRecebida = this.inimigo.getExperienciaConcedida();
+        this.niveisGanhos = this.jogador.ganharExperiencia(this.experienciaRecebida);
+        this.nivelFinalJogador = this.jogador.getNivel();
     }
 }

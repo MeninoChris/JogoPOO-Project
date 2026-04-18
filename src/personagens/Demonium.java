@@ -69,6 +69,11 @@ public class Demonium extends Inimigo {
     }
 
     @Override
+    public int getExperienciaConcedida() {
+        return 220;
+    }
+
+    @Override
     protected String getNomeAtaqueBasico() {
         return "Explosao Infernal";
     }

@@ -66,4 +66,9 @@ public class Necrolis extends Inimigo {
     public String getPerfilCombate() {
         return "Controlador sombrio que enfraquece o jogador, drena essencia e pune alvos vulneraveis";
     }
+
+    @Override
+    public int getExperienciaConcedida() {
+        return 260;
+    }
 }

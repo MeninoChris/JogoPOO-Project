@@ -4,7 +4,7 @@ import combate.LogCombate;
 
 public abstract class Criatura {
     private final String nome;
-    private final int vidaMaxima;
+    private int vidaMaxima;
     private int vida;
     private String efeitoDanoContinuo;
     private int danoContinuoPorTurno;
@@ -67,6 +67,11 @@ public abstract class Criatura {
     public void restaurarVidaTotal() {
         this.vida = this.vidaMaxima;
         narrar("teve a vida restaurada para " + this.vidaMaxima + ".");
+    }
+
+    public void aumentarVidaMaxima(int aumento) {
+        this.vidaMaxima += aumento;
+        narrar("teve a vida maxima aumentada em " + aumento + ".");
     }
 
     public void tomaDano(int dano, Criatura atacante) {
