@@ -4,6 +4,7 @@ import combate.LogCombate;
 import armas.AdagaSombria;
 import armas.Arco_e_Flecha;
 import armas.Arma;
+import armas.EscudoGuardiao;
 import armas.Espada;
 import armas.Faca;
 import armas.LaminasGemeas;
@@ -179,6 +180,7 @@ public class ControladorBatalha {
             return new Arma[] {
                 new Faca(),
                 new Espada(),
+                new EscudoGuardiao(),
                 new AdagaSombria(),
                 new LaminasGemeas(),
                 new MachadoBerserker()

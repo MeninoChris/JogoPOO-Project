@@ -3,6 +3,7 @@ package personagens;
 import armas.AdagaSombria;
 import armas.Arco_e_Flecha;
 import armas.Arma;
+import armas.EscudoGuardiao;
 import armas.Espada;
 import armas.Faca;
 import armas.LaminasGemeas;
@@ -27,6 +28,7 @@ public class Jogador extends Criatura {
     private boolean defendendo;
     private int recargaHabilidadeEspecial;
     private int indiceUltimaArmaUsada;
+    private int escudoTemporario;
 
     public Jogador(String nome) {
         this(
@@ -36,6 +38,7 @@ public class Jogador extends Criatura {
                 new AdagaSombria(),
                 new Pistola(),
                 new Espada(),
+                new EscudoGuardiao(),
                 new Arco_e_Flecha(),
                 new LaminasGemeas(),
                 new LancaPerfurante(),
@@ -49,9 +52,9 @@ public class Jogador extends Criatura {
         this.inventario = new Inventario(
             armasEscolhidas,
             new Consumivel[] {
-                new Fruta("Maca", 35),
-                new Fruta("Coco", 50),
-                new PocaoCura(120),
+                new Fruta("Maca", 45, 20),
+                new Fruta("Coco", 80, 35),
+                new PocaoCura(150, 60),
                 new PergaminhoForca(25),
                 new PergaminhoCritico(20, 0.5)
             }
@@ -85,11 +88,14 @@ public class Jogador extends Criatura {
 
     public void defender() {
         this.defendendo = true;
+        Arma armaDefensiva = getArmaDefensivaAtiva();
+        int chanceBloqueio = CHANCE_BLOQUEIO_TOTAL + armaDefensiva.getBonusBloqueioTotal();
+        int chanceParry = CHANCE_PARRY + armaDefensiva.getBonusParry();
         narrar(
             "usou Postura Defensiva. Chance de bloqueio total: "
-                + CHANCE_BLOQUEIO_TOTAL
+                + chanceBloqueio
                 + "%, chance de parry: "
-                + CHANCE_PARRY
+                + chanceParry
                 + "%."
         );
     }
@@ -118,6 +124,7 @@ public class Jogador extends Criatura {
     public void prepararParaNovaBatalha() {
         this.defendendo = false;
         this.recargaHabilidadeEspecial = 0;
+        this.escudoTemporario = 0;
         restaurarVidaTotal();
     }
 
@@ -128,21 +135,35 @@ public class Jogador extends Criatura {
 
     @Override
     public void tomaDano(int dano, Criatura atacante) {
+        if (this.escudoTemporario > 0) {
+            int absorvido = Math.min(dano, this.escudoTemporario);
+            this.escudoTemporario -= absorvido;
+            dano -= absorvido;
+            narrar("teve " + absorvido + " de dano absorvido pela energia restauradora.");
+            if (dano == 0) {
+                narrar("nao sofreu dano gracas ao escudo temporario.");
+                return;
+            }
+        }
+
         if (this.defendendo) {
             this.defendendo = false;
+            Arma armaDefensiva = getArmaDefensivaAtiva();
+            int chanceParry = CHANCE_PARRY + armaDefensiva.getBonusParry();
+            int chanceBloqueioTotal = CHANCE_BLOQUEIO_TOTAL + armaDefensiva.getBonusBloqueioTotal();
 
-            if (sortearChance(CHANCE_PARRY) && atacante != null) {
+            if (sortearChance(chanceParry) && atacante != null) {
                 narrar("executou um parry perfeito. Bloqueou todo o dano e respondera com contra-ataque critico.");
                 executarParry(atacante);
                 return;
             }
 
-            if (sortearChance(CHANCE_BLOQUEIO_TOTAL)) {
+            if (sortearChance(chanceBloqueioTotal)) {
                 narrar("bloqueou completamente o ataque e nao sofreu dano.");
                 return;
             }
 
-            int danoReduzido = (int) Math.ceil(dano * 0.5);
+            int danoReduzido = (int) Math.ceil(dano * armaDefensiva.getMultiplicadorReducaoDefensiva());
             narrar("reduziu o dano usando a postura defensiva.");
             super.tomaDano(danoReduzido);
             return;
@@ -190,6 +211,11 @@ public class Jogador extends Criatura {
         falar("Eu vou voltar pra te arrasar!");
     }
 
+    public void aplicarEscudoTemporario(int valor) {
+        this.escudoTemporario += valor;
+        narrar("recebeu um escudo temporario de " + valor + ".");
+    }
+
     private boolean sortearChance(int chance) {
         return Math.random() * 100 < chance;
     }
@@ -205,5 +231,16 @@ public class Jogador extends Criatura {
                 + " de dano critico."
         );
         alvo.tomaDano(danoParry, this);
+    }
+
+    private Arma getArmaDefensivaAtiva() {
+        for (int i = 0; i < this.inventario.getQuantidadeArmas(); i++) {
+            Arma arma = this.inventario.getArma(i);
+            if (arma.getBonusBloqueioTotal() > 0 || arma.getBonusParry() > 0) {
+                return arma;
+            }
+        }
+
+        return this.inventario.getArma(this.indiceUltimaArmaUsada);
     }
 }

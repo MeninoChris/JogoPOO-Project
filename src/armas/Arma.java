@@ -183,6 +183,18 @@ public abstract class Arma {
         return (int) Math.round(danoBase * multiplicadorFinal);
     }
 
+    public int getBonusBloqueioTotal() {
+        return 0;
+    }
+
+    public int getBonusParry() {
+        return 0;
+    }
+
+    public double getMultiplicadorReducaoDefensiva() {
+        return 0.5;
+    }
+
     protected String getDescricaoMunicao() {
         return "Municao = infinita";
     }
