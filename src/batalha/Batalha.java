@@ -9,6 +9,7 @@ public class Batalha {
     private final Jogador jogador;
     private final Inimigo inimigo;
     private Criatura vencedor;
+    private int rodadas;
 
     public Batalha(Jogador jogador, Inimigo inimigo) {
         this.jogador = jogador;
@@ -23,11 +24,9 @@ public class Batalha {
         this.jogador.fraseApresentacao();
         this.inimigo.fraseApresentacao();
 
-        int rodada = 0;
-
         while (this.jogador.estaVivo() && this.inimigo.estaVivo()) {
-            rodada++;
-            System.out.println("Rodada numero: " + rodada);
+            this.rodadas++;
+            System.out.println("Rodada numero: " + this.rodadas);
 
             this.jogador.mostrarVida();
             this.inimigo.mostrarVida();
@@ -48,6 +47,16 @@ public class Batalha {
 
     public Criatura getVencedor() {
         return this.vencedor;
+    }
+
+    public String getResumo() {
+        String nomeVencedor = this.vencedor == null ? "Sem vencedor" : this.vencedor.getNome();
+        return "Batalha contra "
+            + this.inimigo.getNome()
+            + " - vencedor: "
+            + nomeVencedor
+            + " - rodadas: "
+            + this.rodadas;
     }
 
     private void definirVencedor() {

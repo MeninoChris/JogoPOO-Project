@@ -47,4 +47,9 @@ public abstract class Criatura {
     public void mostrarVida() {
         System.out.println(this.nome + " / Vida = " + this.vida);
     }
+
+    public void restaurarVidaTotal() {
+        this.vida = this.vidaMaxima;
+        System.out.println(this.nome + " teve a vida restaurada para " + this.vidaMaxima + ".");
+    }
 }

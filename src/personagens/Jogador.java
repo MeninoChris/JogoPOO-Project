@@ -94,6 +94,12 @@ public class Jogador extends Criatura {
         }
     }
 
+    public void prepararParaNovaBatalha() {
+        this.defendendo = false;
+        this.recargaHabilidadeEspecial = 0;
+        restaurarVidaTotal();
+    }
+
     @Override
     public void tomaDano(int dano) {
         if (this.defendendo) {
