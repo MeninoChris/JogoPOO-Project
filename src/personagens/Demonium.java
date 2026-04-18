@@ -1,10 +1,10 @@
 package personagens;
 
-import defesas.Escudo;
+import defesas.BarreiraMagica;
 
 public class Demonium extends Inimigo {
     public Demonium() {
-        super("Demonium", 500, 120, new Escudo(15));
+        super("Demonium", 500, 120, new BarreiraMagica(90));
     }
 
     @Override

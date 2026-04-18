@@ -2,10 +2,12 @@ package personagens;
 
 public abstract class Criatura {
     private final String nome;
+    private final int vidaMaxima;
     private int vida;
 
     public Criatura(String nome, int vida) {
         this.nome = nome;
+        this.vidaMaxima = vida;
         this.vida = vida;
     }
 
@@ -25,6 +27,17 @@ public abstract class Criatura {
         if (this.vida < 0) {
             this.vida = 0;
         }
+    }
+
+    public void curar(int cura) {
+        int vidaAntes = this.vida;
+        this.vida += cura;
+        if (this.vida > this.vidaMaxima) {
+            this.vida = this.vidaMaxima;
+        }
+        System.out.println(
+            this.nome + " recuperou " + (this.vida - vidaAntes) + " de vida."
+        );
     }
 
     public boolean estaVivo() {
