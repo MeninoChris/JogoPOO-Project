@@ -1,5 +1,6 @@
 package controle;
 
+import combate.LogCombate;
 import armas.AdagaSombria;
 import armas.Arco_e_Flecha;
 import armas.Arma;
@@ -25,7 +26,7 @@ public class ControladorBatalha {
     }
 
     public Jogador configurarJogador() {
-        System.out.println("Digite o nome do jogador:");
+        LogCombate.evento("Digite o nome do jogador:");
         String nome = this.scanner.nextLine().trim();
         if (nome.isEmpty()) {
             nome = "MeninoChris";
@@ -34,19 +35,21 @@ public class ControladorBatalha {
         Arma armaCurta = escolherArmaInicial(TipoArma.CURTA_DISTANCIA);
         Arma armaLonga = escolherArmaInicial(TipoArma.LONGA_DISTANCIA);
 
-        System.out.println("Jogador " + nome + " preparado para a batalha.");
-        return new Jogador(nome, new Arma[] { armaCurta, armaLonga });
+        LogCombate.evento("Jogador " + nome + " preparado para a batalha.");
+        Jogador jogador = new Jogador(nome, new Arma[] { armaCurta, armaLonga });
+        exibirPreparacaoPreBatalha(jogador);
+        return jogador;
     }
 
     public void executarTurnoJogador(Jogador jogador, Inimigo inimigo) {
         boolean turnoConcluido = false;
 
         while (!turnoConcluido) {
-            System.out.println("Escolha uma acao:");
-            System.out.println("1 - Atacar");
-            System.out.println("2 - Defender");
-            System.out.println("3 - Curar");
-            System.out.println("4 - Habilidade especial");
+            LogCombate.evento("Escolha uma acao:");
+            LogCombate.evento("1 - Atacar");
+            LogCombate.evento("2 - Defender");
+            LogCombate.evento("3 - Curar");
+            LogCombate.evento("4 - Habilidade especial");
 
             int escolha = lerEscolhaValida(4);
 
@@ -73,7 +76,7 @@ public class ControladorBatalha {
 
     private void executarAtaque(Jogador jogador, Inimigo inimigo) {
         Inventario inventario = jogador.getInventario();
-        System.out.println("Escolha sua arma:");
+        LogCombate.evento("Escolha sua arma:");
         inventario.mostrarArmas();
 
         int escolha = lerEscolhaValida(inventario.getQuantidadeArmas());
@@ -83,11 +86,11 @@ public class ControladorBatalha {
     private boolean executarCura(Jogador jogador) {
         List<Consumivel> itensDeCura = jogador.getInventario().getConsumiveisDeCura();
         if (itensDeCura.isEmpty()) {
-            System.out.println("Voce nao possui itens de cura.");
+            LogCombate.evento("Voce nao possui itens de cura.");
             return false;
         }
 
-        System.out.println("Escolha um item de cura:");
+        LogCombate.evento("Escolha um item de cura:");
         mostrarConsumiveis(itensDeCura);
 
         int escolha = lerEscolhaValida(itensDeCura.size());
@@ -96,14 +99,14 @@ public class ControladorBatalha {
     }
 
     private boolean executarEspecial(Jogador jogador, Inimigo inimigo) {
-        System.out.println("Escolha a habilidade especial:");
-        System.out.println("1 - Golpe Heroico");
-        System.out.println("2 - Usar pergaminho");
+        LogCombate.evento("Escolha a habilidade especial:");
+        LogCombate.evento("1 - Golpe Heroico");
+        LogCombate.evento("2 - Usar pergaminho");
 
         int escolha = lerEscolhaValida(2);
         if (escolha == 1) {
             if (!jogador.podeUsarHabilidadeEspecial()) {
-                System.out.println("A habilidade especial ainda esta em recarga.");
+                LogCombate.evento("A habilidade especial ainda esta em recarga.");
                 return false;
             }
 
@@ -113,11 +116,11 @@ public class ControladorBatalha {
 
         List<Consumivel> itensDeBuff = jogador.getInventario().getConsumiveisDeAprimoramento();
         if (itensDeBuff.isEmpty()) {
-            System.out.println("Voce nao possui pergaminhos ou itens de aprimoramento.");
+            LogCombate.evento("Voce nao possui pergaminhos ou itens de aprimoramento.");
             return false;
         }
 
-        System.out.println("Escolha um item de aprimoramento:");
+        LogCombate.evento("Escolha um item de aprimoramento:");
         mostrarConsumiveis(itensDeBuff);
 
         int itemEscolhido = lerEscolhaValida(itensDeBuff.size());
@@ -127,7 +130,7 @@ public class ControladorBatalha {
 
     private void mostrarConsumiveis(List<Consumivel> consumiveis) {
         for (int i = 0; i < consumiveis.size(); i++) {
-            System.out.println((i + 1) + " - " + consumiveis.get(i).getDescricaoCompleta());
+            LogCombate.evento((i + 1) + " - " + consumiveis.get(i).getDescricaoCompleta());
         }
     }
 
@@ -135,17 +138,40 @@ public class ControladorBatalha {
         Arma[] opcoes = criarOpcoesDeArma(tipoArma);
 
         if (tipoArma == TipoArma.CURTA_DISTANCIA) {
-            System.out.println("Escolha uma arma de curta distancia:");
+            LogCombate.evento("Escolha uma arma de curta distancia:");
         } else {
-            System.out.println("Escolha uma arma de longa distancia:");
+            LogCombate.evento("Escolha uma arma de longa distancia:");
         }
 
         for (int i = 0; i < opcoes.length; i++) {
-            System.out.println((i + 1) + " - " + opcoes[i].getDescricaoSelecao());
+            LogCombate.evento((i + 1) + " - " + opcoes[i].getDescricaoSelecao());
         }
 
         int escolha = lerEscolhaValida(opcoes.length);
         return opcoes[escolha - 1];
+    }
+
+    private void exibirPreparacaoPreBatalha(Jogador jogador) {
+        LogCombate.evento("");
+        LogCombate.evento("Resumo de preparacao do jogador:");
+        LogCombate.evento("Habilidade especial:");
+        LogCombate.evento("1 - " + jogador.getDescricaoHabilidadeEspecial());
+
+        LogCombate.evento("Armas escolhidas:");
+        Inventario inventario = jogador.getInventario();
+        for (int i = 0; i < inventario.getQuantidadeArmas(); i++) {
+            Arma arma = inventario.getArma(i);
+            LogCombate.evento((i + 1) + " - " + arma.getDescricaoSelecao());
+            LogCombate.evento("    Descricao tatica: " + arma.getDescricaoPreBatalha());
+        }
+
+        LogCombate.evento("Consumiveis iniciais:");
+        List<Consumivel> consumiveis = inventario.getConsumiveis();
+        for (int i = 0; i < consumiveis.size(); i++) {
+            Consumivel consumivel = consumiveis.get(i);
+            LogCombate.evento((i + 1) + " - " + consumivel.getNomeExibicao() + ": " + consumivel.getDescricaoPreBatalha());
+        }
+        LogCombate.evento("");
     }
 
     private Arma[] criarOpcoesDeArma(TipoArma tipoArma) {
@@ -169,7 +195,7 @@ public class ControladorBatalha {
     private int lerEscolhaValida(int limite) {
         while (true) {
             if (!this.scanner.hasNextInt()) {
-                System.out.println("Entrada invalida. Digite um numero.");
+                LogCombate.evento("Entrada invalida. Digite um numero.");
                 this.scanner.next();
                 continue;
             }
@@ -179,7 +205,7 @@ public class ControladorBatalha {
                 return escolha;
             }
 
-            System.out.println("Numero invalido, escolha outro:");
+            LogCombate.evento("Numero invalido, escolha outro:");
         }
     }
 }

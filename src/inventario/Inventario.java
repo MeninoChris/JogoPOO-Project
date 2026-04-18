@@ -68,6 +68,10 @@ public class Inventario {
         this.consumiveis.remove(consumivel);
     }
 
+    public List<Consumivel> getConsumiveis() {
+        return new ArrayList<>(this.consumiveis);
+    }
+
     private List<Consumivel> filtrarConsumiveis(TipoConsumivel tipoConsumivel) {
         List<Consumivel> filtrados = new ArrayList<>();
         for (Consumivel consumivel : this.consumiveis) {

@@ -17,6 +17,14 @@ public abstract class Consumivel {
         return this.nome + " - " + this.descricao;
     }
 
+    public String getNomeExibicao() {
+        return this.nome;
+    }
+
+    public String getDescricaoPreBatalha() {
+        return this.descricao;
+    }
+
     public TipoConsumivel getTipoConsumivel() {
         return this.tipoConsumivel;
     }

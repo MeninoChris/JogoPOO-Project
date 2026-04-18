@@ -21,8 +21,8 @@ public abstract class ArmaComMunicao extends Arma {
     @Override
     public void golpe(Criatura atacante, Criatura alvo) {
         if (this.municao <= 0) {
-            System.out.println(getNome() + " esta sem municao. O ataque causou 0 de dano.");
-            alvo.tomaDano(0);
+            atacante.narrar("tentou usar " + getNome() + ", mas a municao acabou. Dano previsto: 0.");
+            alvo.tomaDano(0, atacante);
             return;
         }
 

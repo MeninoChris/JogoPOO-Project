@@ -1,5 +1,7 @@
 package personagens;
 
+import combate.LogCombate;
+
 public abstract class Criatura {
     private final String nome;
     private final int vidaMaxima;
@@ -15,14 +17,24 @@ public abstract class Criatura {
         return this.nome;
     }
 
+    public abstract String getCodinome();
+
     public abstract void fazAtaque(Criatura alvo);
 
     public abstract void fraseApresentacao();
 
     public abstract void fraseMorte();
 
+    protected void falar(String frase) {
+        LogCombate.fala(getCodinome(), frase);
+    }
+
+    public void narrar(String mensagem) {
+        LogCombate.narracao(getCodinome(), mensagem);
+    }
+
     public void tomaDano(int dano) {
-        System.out.println(this.nome + " toma dano de " + dano);
+        narrar("sofreu " + dano + " de dano.");
         this.vida -= dano;
         if (this.vida < 0) {
             this.vida = 0;
@@ -35,9 +47,7 @@ public abstract class Criatura {
         if (this.vida > this.vidaMaxima) {
             this.vida = this.vidaMaxima;
         }
-        System.out.println(
-            this.nome + " recuperou " + (this.vida - vidaAntes) + " de vida."
-        );
+        narrar("recuperou " + (this.vida - vidaAntes) + " de vida.");
     }
 
     public boolean estaVivo() {
@@ -45,11 +55,15 @@ public abstract class Criatura {
     }
 
     public void mostrarVida() {
-        System.out.println(this.nome + " / Vida = " + this.vida);
+        narrar("esta com " + this.vida + " de vida.");
     }
 
     public void restaurarVidaTotal() {
         this.vida = this.vidaMaxima;
-        System.out.println(this.nome + " teve a vida restaurada para " + this.vidaMaxima + ".");
+        narrar("teve a vida restaurada para " + this.vidaMaxima + ".");
+    }
+
+    public void tomaDano(int dano, Criatura atacante) {
+        tomaDano(dano);
     }
 }

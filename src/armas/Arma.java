@@ -82,11 +82,13 @@ public abstract class Arma {
 
     public void golpe(Criatura atacante, Criatura alvo) {
         if (!tentouAcertar()) {
-            System.out.println("Ataque falhou.");
+            atacante.narrar("usou " + this.nome + ", mas o ataque falhou.");
             return;
         }
 
-        aplicarDano(atacante, alvo, calcularDano(atacante));
+        int danoCalculado = calcularDano(atacante);
+        atacante.narrar("usou " + this.nome + ". Dano previsto: " + danoCalculado + ".");
+        aplicarDano(atacante, alvo, danoCalculado);
     }
 
     protected boolean tentouAcertar() {
@@ -110,14 +112,14 @@ public abstract class Arma {
 
         if (RD.nextInt(100) < chanceCriticoFinal) {
             danoFinal = (int) Math.round(danoFinal * multiplicadorCriticoFinal);
-            System.out.println("Acerto critico!");
+            atacante.narrar("conseguiu um acerto critico.");
         }
 
         return danoFinal;
     }
 
     protected void aplicarDano(Criatura atacante, Criatura alvo, int dano) {
-        alvo.tomaDano(dano);
+        alvo.tomaDano(dano, atacante);
     }
 
     protected void aplicarDanoIgnorandoDefesa(Criatura alvo, int dano) {
@@ -137,12 +139,48 @@ public abstract class Arma {
         return this.nome;
     }
 
+    public String getNomeExibicao() {
+        return this.nome;
+    }
+
     public TipoArma getTipoArma() {
         return this.tipoArma;
     }
 
     protected String getDescricaoEfeitoEspecial() {
         return "";
+    }
+
+    public String getDescricaoPreBatalha() {
+        String descricao =
+            "Precisao "
+                + this.chance
+                + "%, critico "
+                + this.chanceCritico
+                + "%, multiplicador x"
+                + this.multiplicadorCritico
+                + ", "
+                + getDescricaoMunicao();
+
+        String efeitoEspecial = getDescricaoEfeitoEspecial();
+        if (!efeitoEspecial.isEmpty()) {
+            descricao += ", efeito: " + efeitoEspecial;
+        }
+
+        return descricao;
+    }
+
+    public int calcularDanoCriticoGarantido(Criatura atacante) {
+        int danoBase = this.ataque;
+        double multiplicadorFinal = this.multiplicadorCritico;
+
+        if (atacante instanceof personagens.Jogador jogador) {
+            danoBase += jogador.getBonusDano();
+            multiplicadorFinal += jogador.getBonusMultiplicadorCritico();
+        }
+
+        atacante.narrar("forcou um acerto critico com " + this.nome + ".");
+        return (int) Math.round(danoBase * multiplicadorFinal);
     }
 
     protected String getDescricaoMunicao() {

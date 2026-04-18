@@ -12,7 +12,7 @@ public class LancaPerfurante extends Arma {
     @Override
     protected void aplicarDano(Criatura atacante, Criatura alvo, int dano) {
         if (sortearChance(CHANCE_IGNORAR_DEFESA)) {
-            System.out.println("Golpe perfurante ignorou a defesa!");
+            atacante.narrar("ativou o efeito perfurante e ignorara a defesa do alvo.");
             aplicarDanoIgnorandoDefesa(alvo, dano);
             return;
         }

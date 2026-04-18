@@ -15,22 +15,22 @@ public class Necrolis extends Inimigo {
         int sorteio = RD.nextInt(100);
 
         if (sorteio < 25) {
-            System.out.println(getNome() + " desapareceu nas sombras e nao atacou.");
+            narrar("usou Passo Sombrio e desapareceu nas sombras. Nenhum dano sera causado.");
             return;
         }
 
         int dano = 60 + RD.nextInt(81);
-        System.out.println(getNome() + " lanca uma rajada sombria de " + dano + " de dano.");
+        narrar("usou Rajada Sombria. Dano previsto: " + dano + ".");
         alvo.tomaDano(dano);
     }
 
     @Override
     public void fraseApresentacao() {
-        System.out.println("Eu sou Necrolis, o vulto que precede o fim.");
+        falar("Eu sou Necrolis, o vulto que precede o fim.");
     }
 
     @Override
     public void fraseMorte() {
-        System.out.println("As sombras... estao me deixando...");
+        falar("As sombras... estao me deixando...");
     }
 }

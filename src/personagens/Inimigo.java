@@ -18,7 +18,8 @@ public abstract class Inimigo extends Criatura {
 
     @Override
     public void fazAtaque(Criatura alvo) {
-        alvo.tomaDano(this.ataque);
+        narrar("usou " + getNomeAtaqueBasico() + " e causara " + this.ataque + " de dano.");
+        alvo.tomaDano(this.ataque, this);
     }
 
     @Override
@@ -28,7 +29,20 @@ public abstract class Inimigo extends Criatura {
     }
 
     public void tomaDanoIgnorandoDefesa(int dano) {
-        System.out.println("A defesa de " + this.getNome() + " foi ignorada.");
+        narrar("teve a defesa ignorada.");
         super.tomaDano(dano);
+    }
+
+    @Override
+    public String getCodinome() {
+        return "[INIMIGO " + getNome() + "]";
+    }
+
+    protected String getNomeAtaqueBasico() {
+        return "Ataque Sombrio";
+    }
+
+    protected int getAtaqueBase() {
+        return this.ataque;
     }
 }

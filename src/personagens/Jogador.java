@@ -17,12 +17,16 @@ import itens.PergaminhoForca;
 import itens.PocaoCura;
 
 public class Jogador extends Criatura {
+    private static final int CHANCE_BLOQUEIO_TOTAL = 20;
+    private static final int CHANCE_PARRY = 10;
+
     private final Inventario inventario;
     private int bonusDano;
     private int bonusChanceCritico;
     private double bonusMultiplicadorCritico;
     private boolean defendendo;
     private int recargaHabilidadeEspecial;
+    private int indiceUltimaArmaUsada;
 
     public Jogador(String nome) {
         this(
@@ -59,22 +63,35 @@ public class Jogador extends Criatura {
         atacarComArma(0, alvo);
     }
 
+    @Override
+    public String getCodinome() {
+        return "[JOGADOR " + getNome() + "]";
+    }
+
     public Inventario getInventario() {
         return this.inventario;
     }
 
     public void atacarComArma(int indiceArma, Criatura alvo) {
+        this.indiceUltimaArmaUsada = indiceArma;
         this.inventario.getArma(indiceArma).golpe(this, alvo);
     }
 
     public void usarConsumivel(Consumivel consumivel) {
+        narrar("usou " + consumivel.getNomeExibicao() + ". Efeito: " + consumivel.getDescricaoPreBatalha() + ".");
         this.inventario.removerConsumivel(consumivel);
         consumivel.usar(this);
     }
 
     public void defender() {
         this.defendendo = true;
-        System.out.println(this.getNome() + " assumiu postura defensiva.");
+        narrar(
+            "usou Postura Defensiva. Chance de bloqueio total: "
+                + CHANCE_BLOQUEIO_TOTAL
+                + "%, chance de parry: "
+                + CHANCE_PARRY
+                + "%."
+        );
     }
 
     public boolean podeUsarHabilidadeEspecial() {
@@ -83,9 +100,13 @@ public class Jogador extends Criatura {
 
     public void usarHabilidadeEspecial(Criatura alvo) {
         int danoEspecial = 180 + this.bonusDano;
-        System.out.println(this.getNome() + " usou Golpe Heroico!");
+        narrar("usou Golpe Heroico. Dano previsto: " + danoEspecial + ". Recarga: 3 turnos.");
         alvo.tomaDano(danoEspecial);
         this.recargaHabilidadeEspecial = 3;
+    }
+
+    public String getDescricaoHabilidadeEspecial() {
+        return "Golpe Heroico - causa 180 + bonus de dano e entra em recarga por 3 turnos";
     }
 
     public void avancarTurno() {
@@ -102,10 +123,27 @@ public class Jogador extends Criatura {
 
     @Override
     public void tomaDano(int dano) {
+        tomaDano(dano, null);
+    }
+
+    @Override
+    public void tomaDano(int dano, Criatura atacante) {
         if (this.defendendo) {
-            int danoReduzido = (int) Math.ceil(dano * 0.5);
-            System.out.println(this.getNome() + " reduziu o dano ao defender.");
             this.defendendo = false;
+
+            if (sortearChance(CHANCE_PARRY) && atacante != null) {
+                narrar("executou um parry perfeito. Bloqueou todo o dano e respondera com contra-ataque critico.");
+                executarParry(atacante);
+                return;
+            }
+
+            if (sortearChance(CHANCE_BLOQUEIO_TOTAL)) {
+                narrar("bloqueou completamente o ataque e nao sofreu dano.");
+                return;
+            }
+
+            int danoReduzido = (int) Math.ceil(dano * 0.5);
+            narrar("reduziu o dano usando a postura defensiva.");
             super.tomaDano(danoReduzido);
             return;
         }
@@ -115,15 +153,14 @@ public class Jogador extends Criatura {
 
     public void adicionarBonusDano(int bonusDano) {
         this.bonusDano += bonusDano;
-        System.out.println(this.getNome() + " recebeu +" + bonusDano + " de dano.");
+        narrar("teve o dano aumentado em +" + bonusDano + ".");
     }
 
     public void adicionarBonusCritico(int bonusChanceCritico, double bonusMultiplicadorCritico) {
         this.bonusChanceCritico += bonusChanceCritico;
         this.bonusMultiplicadorCritico += bonusMultiplicadorCritico;
-        System.out.println(
-            this.getNome()
-                + " recebeu +"
+        narrar(
+            "teve +"
                 + bonusChanceCritico
                 + "% de chance critica e +"
                 + bonusMultiplicadorCritico
@@ -145,11 +182,28 @@ public class Jogador extends Criatura {
 
     @Override
     public void fraseApresentacao() {
-        System.out.println("Nao contava com minha astucia!");
+        falar("Nao contava com minha astucia!");
     }
 
     @Override
     public void fraseMorte() {
-        System.out.println("Eu vou voltar pra te arrasar!");
+        falar("Eu vou voltar pra te arrasar!");
+    }
+
+    private boolean sortearChance(int chance) {
+        return Math.random() * 100 < chance;
+    }
+
+    private void executarParry(Criatura alvo) {
+        Arma armaParry = this.inventario.getArma(this.indiceUltimaArmaUsada);
+        int danoParry = armaParry.calcularDanoCriticoGarantido(this);
+        narrar(
+            "contra-atacou com "
+                + armaParry.getNomeExibicao()
+                + " e causara "
+                + danoParry
+                + " de dano critico."
+        );
+        alvo.tomaDano(danoParry, this);
     }
 }

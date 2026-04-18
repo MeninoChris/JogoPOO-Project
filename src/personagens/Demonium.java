@@ -9,11 +9,16 @@ public class Demonium extends Inimigo {
 
     @Override
     public void fraseApresentacao() {
-        System.out.println("Eu sou a morte, doce, nua e crua");
+        falar("Eu sou a morte, doce, nua e crua");
     }
 
     @Override
     public void fraseMorte() {
-        System.out.println("Matar a morte e bem ironico, nao?");
+        falar("Matar a morte e bem ironico, nao?");
+    }
+
+    @Override
+    protected String getNomeAtaqueBasico() {
+        return "Explosao Infernal";
     }
 }

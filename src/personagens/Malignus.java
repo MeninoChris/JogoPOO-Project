@@ -9,11 +9,16 @@ public class Malignus extends Inimigo {
 
     @Override
     public void fraseApresentacao() {
-        System.out.println("Eu vou te matar...");
+        falar("Eu vou te matar...");
     }
 
     @Override
     public void fraseMorte() {
-        System.out.println("Naoooooooo...");
+        falar("Naoooooooo...");
+    }
+
+    @Override
+    protected String getNomeAtaqueBasico() {
+        return "Garra Maldita";
     }
 }

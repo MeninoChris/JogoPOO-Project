@@ -1,5 +1,6 @@
 package batalha;
 
+import combate.LogCombate;
 import controle.ControladorBatalha;
 import personagens.Criatura;
 import personagens.Inimigo;
@@ -17,9 +18,9 @@ public class Batalha {
     }
 
     public void executar(ControladorBatalha controladorBatalha) {
-        System.out.println("#####################");
-        System.out.println("A Grande Batalha");
-        System.out.println("#####################");
+        LogCombate.titulo("#####################");
+        LogCombate.titulo("A Grande Batalha");
+        LogCombate.titulo("#####################");
 
         this.jogador.fraseApresentacao();
         this.inimigo.fraseApresentacao();
@@ -38,7 +39,7 @@ public class Batalha {
             }
 
             this.jogador.avancarTurno();
-            System.out.println();
+            LogCombate.evento("");
         }
 
         definirVencedor();
@@ -71,11 +72,11 @@ public class Batalha {
     private void exibirResultado() {
         if (this.vencedor == this.jogador) {
             this.inimigo.fraseMorte();
-            System.out.println(this.jogador.getNome() + " venceu!");
+            LogCombate.evento(this.jogador.getNome() + " venceu!");
             return;
         }
 
         this.jogador.fraseMorte();
-        System.out.println(this.inimigo.getNome() + " venceu!");
+        LogCombate.evento(this.inimigo.getNome() + " venceu!");
     }
 }

@@ -9,9 +9,9 @@ public class LaminasGemeas extends Arma {
 
     @Override
     public void golpe(Criatura atacante, Criatura alvo) {
-        System.out.println(getNome() + " executa dois golpes rapidos.");
+        atacante.narrar("usou " + getNome() + ". Efeito: dois golpes rapidos.");
         for (int i = 0; i < 2; i++) {
-            System.out.println("Golpe " + (i + 1) + ":");
+            atacante.narrar("prepara o golpe " + (i + 1) + ".");
             super.golpe(atacante, alvo);
         }
     }
