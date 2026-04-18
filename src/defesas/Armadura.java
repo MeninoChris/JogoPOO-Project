@@ -10,7 +10,7 @@ public class Armadura extends Defesa {
     @Override
     public int danoReduzido(int danoOriginal) {
         int danoReduzido = danoOriginal - (danoOriginal * this.porcentagemReducao / 100);
-        System.out.println("A armadura reduziu parte do dano.");
+        narrar("A armadura reduziu parte do dano.");
         return danoReduzido;
     }
 }

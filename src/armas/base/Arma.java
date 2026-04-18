@@ -35,7 +35,7 @@ public abstract class Arma {
         this.multiplicadorCritico = multiplicadorCritico;
     }
 
-    public void descricao() {
+    public String getDescricaoCombate() {
         String descricao =
             this.nome
                 + " (Dano = "
@@ -55,7 +55,7 @@ public abstract class Arma {
             descricao += " - " + efeitoEspecial;
         }
 
-        System.out.println(descricao);
+        return descricao;
     }
 
     public String getDescricaoSelecao() {
@@ -199,6 +199,8 @@ public abstract class Arma {
     protected String getDescricaoMunicao() {
         return "Municao = infinita";
     }
+
+    public void prepararParaNovaBatalha() {}
 
     private String getDescricaoCategoria() {
         if (this.tipoArma == TipoArma.CURTA_DISTANCIA) {

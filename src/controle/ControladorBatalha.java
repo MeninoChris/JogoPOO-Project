@@ -30,7 +30,7 @@ public class ControladorBatalha {
 
     public Jogador configurarJogador() {
         LogCombate.evento("Digite o nome do jogador:");
-        String nome = this.scanner.nextLine().trim();
+        String nome = lerLinhaOuPadrao("MeninoChris", "Sem entrada para nome. Usando nome padrao.");
         if (nome.isEmpty()) {
             nome = "MeninoChris";
         }
@@ -277,18 +277,42 @@ public class ControladorBatalha {
 
     private int lerEscolhaValida(int limite) {
         while (true) {
-            if (!this.scanner.hasNextInt()) {
+            if (!this.scanner.hasNextLine()) {
+                LogCombate.evento("Entrada encerrada. Selecionando a primeira opcao automaticamente.");
+                return 1;
+            }
+
+            String entrada = normalizarTexto(this.scanner.nextLine());
+            if (entrada.isEmpty()) {
                 LogCombate.evento("Entrada invalida. Digite um numero.");
-                this.scanner.next();
                 continue;
             }
 
-            int escolha = this.scanner.nextInt();
-            if (escolha >= 1 && escolha <= limite) {
-                return escolha;
+            try {
+                int escolha = Integer.parseInt(entrada);
+                if (escolha >= 1 && escolha <= limite) {
+                    return escolha;
+                }
+            } catch (NumberFormatException ex) {
+                LogCombate.evento("Entrada invalida. Digite um numero.");
+                continue;
             }
 
             LogCombate.evento("Numero invalido, escolha outro:");
         }
+    }
+
+    private String lerLinhaOuPadrao(String valorPadrao, String mensagemPadrao) {
+        if (!this.scanner.hasNextLine()) {
+            LogCombate.evento(mensagemPadrao);
+            return valorPadrao;
+        }
+
+        return normalizarTexto(this.scanner.nextLine());
+    }
+
+    private String normalizarTexto(String texto) {
+        String textoNormalizado = texto.replace("\uFEFF", "").trim();
+        return textoNormalizado.replaceAll("\\p{Cntrl}", "");
     }
 }

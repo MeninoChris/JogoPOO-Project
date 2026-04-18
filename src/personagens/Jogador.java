@@ -3,11 +3,8 @@ package personagens;
 import armas.base.Arma;
 import armas.curta.AdagaSombria;
 import armas.curta.EscudoGuardiao;
-import armas.curta.Espada;
-import armas.curta.Faca;
 import armas.curta.LaminasGemeas;
 import armas.curta.MachadoBerserker;
-import armas.longa.Arco_e_Flecha;
 import armas.longa.LancaPerfurante;
 import armas.longa.Pistola;
 import inventario.Inventario;
@@ -60,23 +57,6 @@ public class Jogador extends Criatura {
     private int indiceUltimaArmaUsada;
     private int indiceArmaDeGuarda;
     private int escudoTemporario;
-
-    public Jogador(String nome) {
-        this(
-            nome,
-            new Arma[] {
-                new Faca(),
-                new AdagaSombria(),
-                new Pistola(),
-                new Espada(),
-                new EscudoGuardiao(),
-                new Arco_e_Flecha(),
-                new LaminasGemeas(),
-                new LancaPerfurante(),
-                new MachadoBerserker()
-            }
-        );
-    }
 
     public Jogador(String nome, Arma[] armasEscolhidas) {
         super(nome, 900);
@@ -201,6 +181,8 @@ public class Jogador extends Criatura {
         this.recargaHabilidadeEspecial = 0;
         this.indiceArmaDeGuarda = 0;
         this.escudoTemporario = 0;
+        this.inventario.prepararParaNovaBatalha();
+        removerEfeitosNegativos();
         restaurarVidaTotal();
     }
 

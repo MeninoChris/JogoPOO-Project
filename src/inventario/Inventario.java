@@ -1,6 +1,7 @@
 package inventario;
 
 import armas.base.Arma;
+import combate.LogCombate;
 import itens.Consumivel;
 import itens.TipoConsumivel;
 import java.util.ArrayList;
@@ -42,26 +43,7 @@ public class Inventario {
 
     public void mostrarArmas() {
         for (int i = 0; i < this.armas.size(); i++) {
-            System.out.print((i + 1) + " - ");
-            this.armas.get(i).descricao();
-        }
-    }
-
-    public boolean temConsumiveis() {
-        return !this.consumiveis.isEmpty();
-    }
-
-    public int getQuantidadeConsumiveis() {
-        return this.consumiveis.size();
-    }
-
-    public Consumivel removerConsumivel(int indice) {
-        return this.consumiveis.remove(indice);
-    }
-
-    public void mostrarConsumiveis() {
-        for (int i = 0; i < this.consumiveis.size(); i++) {
-            System.out.println((i + 1) + " - " + this.consumiveis.get(i).getDescricaoCompleta());
+            LogCombate.evento((i + 1) + " - " + this.armas.get(i).getDescricaoCombate());
         }
     }
 
@@ -79,6 +61,12 @@ public class Inventario {
 
     public List<Consumivel> getConsumiveis() {
         return new ArrayList<>(this.consumiveis);
+    }
+
+    public void prepararParaNovaBatalha() {
+        for (Arma arma : this.armas) {
+            arma.prepararParaNovaBatalha();
+        }
     }
 
     private List<Consumivel> filtrarConsumiveis(TipoConsumivel tipoConsumivel) {

@@ -34,7 +34,7 @@ public class Batalha {
 
         while (this.jogador.estaVivo() && this.inimigo.estaVivo()) {
             this.rodadas++;
-            System.out.println("Rodada numero: " + this.rodadas);
+            LogCombate.evento("Rodada numero: " + this.rodadas);
 
             this.jogador.processarInicioTurno();
             if (!this.jogador.estaVivo()) {

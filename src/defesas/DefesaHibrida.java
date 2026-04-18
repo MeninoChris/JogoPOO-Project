@@ -16,7 +16,7 @@ public class DefesaHibrida extends Defesa {
     @Override
     public int danoReduzido(int danoOriginal) {
         if (RD.nextInt(100) < this.chanceEsquiva) {
-            System.out.println("O inimigo esquivou completamente do golpe.");
+            narrar("O inimigo esquivou completamente do golpe.");
             return 0;
         }
 
@@ -25,7 +25,7 @@ public class DefesaHibrida extends Defesa {
             danoFinal = 0;
         }
 
-        System.out.println("A defesa hibrida bloqueou parte do dano.");
+        narrar("A defesa hibrida bloqueou parte do dano.");
         return danoFinal;
     }
 }

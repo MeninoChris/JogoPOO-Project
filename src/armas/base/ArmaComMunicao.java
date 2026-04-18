@@ -3,6 +3,7 @@ package armas.base;
 import personagens.Criatura;
 
 public abstract class ArmaComMunicao extends Arma {
+    private final int municaoMaxima;
     private int municao;
 
     public ArmaComMunicao(
@@ -15,6 +16,7 @@ public abstract class ArmaComMunicao extends Arma {
         int municao
     ) {
         super(nome, tipoArma, ataque, chance, chanceCritico, multiplicadorCritico);
+        this.municaoMaxima = municao;
         this.municao = municao;
     }
 
@@ -38,5 +40,10 @@ public abstract class ArmaComMunicao extends Arma {
     @Override
     protected String getDescricaoMunicao() {
         return "Municao = " + this.municao;
+    }
+
+    @Override
+    public void prepararParaNovaBatalha() {
+        this.municao = this.municaoMaxima;
     }
 }

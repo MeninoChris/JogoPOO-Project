@@ -15,10 +15,6 @@ public class HistoricoBatalhas {
         this.batalhas.add(batalha);
     }
 
-    public int getQuantidadeBatalhas() {
-        return this.batalhas.size();
-    }
-
     public void exibirResumo() {
         LogCombate.evento("");
         LogCombate.evento("Historico de batalhas:");
