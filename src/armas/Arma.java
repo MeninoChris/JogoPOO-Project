@@ -8,17 +8,26 @@ public abstract class Arma {
     private static final Random RD = new Random();
 
     private final String nome;
+    private final TipoArma tipoArma;
     private final int ataque;
     private final int chance;
     private final int chanceCritico;
     private final double multiplicadorCritico;
 
-    public Arma(String nome, int ataque, int chance) {
-        this(nome, ataque, chance, 0, 2.0);
+    public Arma(String nome, TipoArma tipoArma, int ataque, int chance) {
+        this(nome, tipoArma, ataque, chance, 0, 2.0);
     }
 
-    public Arma(String nome, int ataque, int chance, int chanceCritico, double multiplicadorCritico) {
+    public Arma(
+        String nome,
+        TipoArma tipoArma,
+        int ataque,
+        int chance,
+        int chanceCritico,
+        double multiplicadorCritico
+    ) {
         this.nome = nome;
+        this.tipoArma = tipoArma;
         this.ataque = ataque;
         this.chance = chance;
         this.chanceCritico = chanceCritico;
@@ -36,6 +45,8 @@ public abstract class Arma {
                 + this.chanceCritico
                 + "%, Multiplicador Critico = x"
                 + this.multiplicadorCritico
+                + ", "
+                + getDescricaoMunicao()
                 + ")";
 
         String efeitoEspecial = getDescricaoEfeitoEspecial();
@@ -44,6 +55,29 @@ public abstract class Arma {
         }
 
         System.out.println(descricao);
+    }
+
+    public String getDescricaoSelecao() {
+        String descricao =
+            this.nome
+                + " ("
+                + getDescricaoCategoria()
+                + ", Precisao = "
+                + this.chance
+                + "%, Critico = "
+                + this.chanceCritico
+                + "%, Multiplicador Critico = x"
+                + this.multiplicadorCritico
+                + ", "
+                + getDescricaoMunicao()
+                + ")";
+
+        String efeitoEspecial = getDescricaoEfeitoEspecial();
+        if (!efeitoEspecial.isEmpty()) {
+            descricao += " - " + efeitoEspecial;
+        }
+
+        return descricao;
     }
 
     public void golpe(Criatura atacante, Criatura alvo) {
@@ -103,7 +137,22 @@ public abstract class Arma {
         return this.nome;
     }
 
+    public TipoArma getTipoArma() {
+        return this.tipoArma;
+    }
+
     protected String getDescricaoEfeitoEspecial() {
         return "";
+    }
+
+    protected String getDescricaoMunicao() {
+        return "Municao = infinita";
+    }
+
+    private String getDescricaoCategoria() {
+        if (this.tipoArma == TipoArma.CURTA_DISTANCIA) {
+            return "Curta distancia";
+        }
+        return "Longa distancia";
     }
 }

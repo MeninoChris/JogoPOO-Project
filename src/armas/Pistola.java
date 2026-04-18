@@ -1,7 +1,12 @@
 package armas;
 
-public class Pistola extends Arma {
+public class Pistola extends ArmaComMunicao {
     public Pistola() {
-        super("Pistola Deagle", 150, 50, 35, 2.5);
+        super("Pistola Deagle", TipoArma.LONGA_DISTANCIA, 150, 50, 35, 2.5, 6);
+    }
+
+    @Override
+    protected String getDescricaoEfeitoEspecial() {
+        return "Disparo preciso com alto potencial critico";
     }
 }

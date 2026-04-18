@@ -25,8 +25,8 @@ public class Jogador extends Criatura {
     private int recargaHabilidadeEspecial;
 
     public Jogador(String nome) {
-        super(nome, 900);
-        this.inventario = new Inventario(
+        this(
+            nome,
             new Arma[] {
                 new Faca(),
                 new AdagaSombria(),
@@ -36,7 +36,14 @@ public class Jogador extends Criatura {
                 new LaminasGemeas(),
                 new LancaPerfurante(),
                 new MachadoBerserker()
-            },
+            }
+        );
+    }
+
+    public Jogador(String nome, Arma[] armasEscolhidas) {
+        super(nome, 900);
+        this.inventario = new Inventario(
+            armasEscolhidas,
             new Consumivel[] {
                 new Fruta("Maca", 35),
                 new Fruta("Coco", 50),

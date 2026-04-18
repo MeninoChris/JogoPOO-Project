@@ -4,7 +4,7 @@ import personagens.Criatura;
 
 public class LaminasGemeas extends Arma {
     public LaminasGemeas() {
-        super("Laminas Gemeas", 45, 92, 20, 1.7);
+        super("Laminas Gemeas", TipoArma.CURTA_DISTANCIA, 45, 92, 20, 1.7);
     }
 
     @Override

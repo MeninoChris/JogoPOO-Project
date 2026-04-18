@@ -7,9 +7,9 @@ import personagens.Malignus;
 
 public class Main {
     public static void main(String[] args) {
-        Jogador jogador = new Jogador("MeninoChris");
-        Inimigo inimigo = new Malignus();
         ControladorBatalha controladorBatalha = new ControladorBatalha();
+        Jogador jogador = controladorBatalha.configurarJogador();
+        Inimigo inimigo = new Malignus();
         controladorBatalha.executar(jogador, inimigo);
     }
 }

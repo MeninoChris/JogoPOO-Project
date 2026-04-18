@@ -6,7 +6,7 @@ public class LancaPerfurante extends Arma {
     private static final int CHANCE_IGNORAR_DEFESA = 35;
 
     public LancaPerfurante() {
-        super("Lanca Perfurante", 85, 80, 15, 2.0);
+        super("Lanca Perfurante", TipoArma.LONGA_DISTANCIA, 85, 80, 15, 2.0);
     }
 
     @Override

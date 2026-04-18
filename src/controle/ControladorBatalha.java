@@ -1,5 +1,15 @@
 package controle;
 
+import armas.AdagaSombria;
+import armas.Arco_e_Flecha;
+import armas.Arma;
+import armas.Espada;
+import armas.Faca;
+import armas.LaminasGemeas;
+import armas.LancaPerfurante;
+import armas.MachadoBerserker;
+import armas.Pistola;
+import armas.TipoArma;
 import inventario.Inventario;
 import itens.Consumivel;
 import java.util.List;
@@ -12,6 +22,20 @@ public class ControladorBatalha {
 
     public ControladorBatalha() {
         this.scanner = new Scanner(System.in);
+    }
+
+    public Jogador configurarJogador() {
+        System.out.println("Digite o nome do jogador:");
+        String nome = this.scanner.nextLine().trim();
+        if (nome.isEmpty()) {
+            nome = "MeninoChris";
+        }
+
+        Arma armaCurta = escolherArmaInicial(TipoArma.CURTA_DISTANCIA);
+        Arma armaLonga = escolherArmaInicial(TipoArma.LONGA_DISTANCIA);
+
+        System.out.println("Jogador " + nome + " preparado para a batalha.");
+        return new Jogador(nome, new Arma[] { armaCurta, armaLonga });
     }
 
     public void executar(Jogador jogador, Inimigo inimigo) {
@@ -142,6 +166,41 @@ public class ControladorBatalha {
         for (int i = 0; i < consumiveis.size(); i++) {
             System.out.println((i + 1) + " - " + consumiveis.get(i).getDescricaoCompleta());
         }
+    }
+
+    private Arma escolherArmaInicial(TipoArma tipoArma) {
+        Arma[] opcoes = criarOpcoesDeArma(tipoArma);
+
+        if (tipoArma == TipoArma.CURTA_DISTANCIA) {
+            System.out.println("Escolha uma arma de curta distancia:");
+        } else {
+            System.out.println("Escolha uma arma de longa distancia:");
+        }
+
+        for (int i = 0; i < opcoes.length; i++) {
+            System.out.println((i + 1) + " - " + opcoes[i].getDescricaoSelecao());
+        }
+
+        int escolha = lerEscolhaValida(opcoes.length);
+        return opcoes[escolha - 1];
+    }
+
+    private Arma[] criarOpcoesDeArma(TipoArma tipoArma) {
+        if (tipoArma == TipoArma.CURTA_DISTANCIA) {
+            return new Arma[] {
+                new Faca(),
+                new Espada(),
+                new AdagaSombria(),
+                new LaminasGemeas(),
+                new MachadoBerserker()
+            };
+        }
+
+        return new Arma[] {
+            new Arco_e_Flecha(),
+            new Pistola(),
+            new LancaPerfurante()
+        };
     }
 
     private int lerEscolhaValida(int limite) {
