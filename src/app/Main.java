@@ -1,5 +1,6 @@
 package app;
 
+import batalha.Batalha;
 import controle.ControladorBatalha;
 import personagens.Inimigo;
 import personagens.Jogador;
@@ -10,6 +11,7 @@ public class Main {
         ControladorBatalha controladorBatalha = new ControladorBatalha();
         Jogador jogador = controladorBatalha.configurarJogador();
         Inimigo inimigo = new Malignus();
-        controladorBatalha.executar(jogador, inimigo);
+        Batalha batalha = new Batalha(jogador, inimigo);
+        batalha.executar(controladorBatalha);
     }
 }

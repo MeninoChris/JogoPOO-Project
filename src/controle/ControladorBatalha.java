@@ -38,44 +38,7 @@ public class ControladorBatalha {
         return new Jogador(nome, new Arma[] { armaCurta, armaLonga });
     }
 
-    public void executar(Jogador jogador, Inimigo inimigo) {
-        System.out.println("#####################");
-        System.out.println("A Grande Batalha");
-        System.out.println("#####################");
-
-        jogador.fraseApresentacao();
-        inimigo.fraseApresentacao();
-
-        int rodada = 0;
-
-        while (jogador.estaVivo() && inimigo.estaVivo()) {
-            rodada++;
-            System.out.println("Rodada numero: " + rodada);
-
-            jogador.mostrarVida();
-            inimigo.mostrarVida();
-
-            executarTurnoJogador(jogador, inimigo);
-
-            if (inimigo.estaVivo()) {
-                inimigo.fazAtaque(jogador);
-            }
-
-            jogador.avancarTurno();
-            System.out.println();
-        }
-
-        if (!jogador.estaVivo()) {
-            jogador.fraseMorte();
-            System.out.println(inimigo.getNome() + " venceu!");
-            return;
-        }
-
-        inimigo.fraseMorte();
-        System.out.println(jogador.getNome() + " venceu!");
-    }
-
-    private void executarTurnoJogador(Jogador jogador, Inimigo inimigo) {
+    public void executarTurnoJogador(Jogador jogador, Inimigo inimigo) {
         boolean turnoConcluido = false;
 
         while (!turnoConcluido) {
