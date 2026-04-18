@@ -28,6 +28,7 @@ public class Jogador extends Criatura {
     private boolean defendendo;
     private int recargaHabilidadeEspecial;
     private int indiceUltimaArmaUsada;
+    private int indiceArmaDeGuarda;
     private int escudoTemporario;
 
     public Jogador(String nome) {
@@ -59,6 +60,7 @@ public class Jogador extends Criatura {
                 new PergaminhoCritico(20, 0.5)
             }
         );
+        this.indiceArmaDeGuarda = 0;
     }
 
     @Override
@@ -86,13 +88,16 @@ public class Jogador extends Criatura {
         consumivel.usar(this);
     }
 
-    public void defender() {
+    public void prepararDefesa(int indiceArma) {
         this.defendendo = true;
+        this.indiceArmaDeGuarda = indiceArma;
         Arma armaDefensiva = getArmaDefensivaAtiva();
         int chanceBloqueio = CHANCE_BLOQUEIO_TOTAL + armaDefensiva.getBonusBloqueioTotal();
         int chanceParry = CHANCE_PARRY + armaDefensiva.getBonusParry();
         narrar(
-            "usou Postura Defensiva. Chance de bloqueio total: "
+            "usou Postura Defensiva com "
+                + armaDefensiva.getNomeExibicao()
+                + ". Chance de bloqueio total: "
                 + chanceBloqueio
                 + "%, chance de parry: "
                 + chanceParry
@@ -107,7 +112,7 @@ public class Jogador extends Criatura {
     public void usarHabilidadeEspecial(Criatura alvo) {
         int danoEspecial = 180 + this.bonusDano;
         narrar("usou Golpe Heroico. Dano previsto: " + danoEspecial + ". Recarga: 3 turnos.");
-        alvo.tomaDano(danoEspecial);
+        alvo.tomaDano(danoEspecial, this);
         this.recargaHabilidadeEspecial = 3;
     }
 
@@ -124,6 +129,7 @@ public class Jogador extends Criatura {
     public void prepararParaNovaBatalha() {
         this.defendendo = false;
         this.recargaHabilidadeEspecial = 0;
+        this.indiceArmaDeGuarda = 0;
         this.escudoTemporario = 0;
         restaurarVidaTotal();
     }
@@ -234,11 +240,8 @@ public class Jogador extends Criatura {
     }
 
     private Arma getArmaDefensivaAtiva() {
-        for (int i = 0; i < this.inventario.getQuantidadeArmas(); i++) {
-            Arma arma = this.inventario.getArma(i);
-            if (arma.getBonusBloqueioTotal() > 0 || arma.getBonusParry() > 0) {
-                return arma;
-            }
+        if (this.indiceArmaDeGuarda >= 0 && this.indiceArmaDeGuarda < this.inventario.getQuantidadeArmas()) {
+            return this.inventario.getArma(this.indiceArmaDeGuarda);
         }
 
         return this.inventario.getArma(this.indiceUltimaArmaUsada);

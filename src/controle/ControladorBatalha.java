@@ -60,7 +60,7 @@ public class ControladorBatalha {
                     turnoConcluido = true;
                     break;
                 case 2:
-                    jogador.defender();
+                    executarDefesa(jogador);
                     turnoConcluido = true;
                     break;
                 case 3:
@@ -97,6 +97,14 @@ public class ControladorBatalha {
         int escolha = lerEscolhaValida(itensDeCura.size());
         jogador.usarConsumivel(itensDeCura.get(escolha - 1));
         return true;
+    }
+
+    private void executarDefesa(Jogador jogador) {
+        Inventario inventario = jogador.getInventario();
+        LogCombate.evento("Escolha a arma de guarda para defender:");
+        inventario.mostrarArmas();
+        int escolha = lerEscolhaValida(inventario.getQuantidadeArmas());
+        jogador.prepararDefesa(escolha - 1);
     }
 
     private boolean executarEspecial(Jogador jogador, Inimigo inimigo) {

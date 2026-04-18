@@ -115,7 +115,7 @@ public abstract class Arma {
             atacante.narrar("conseguiu um acerto critico.");
         }
 
-        return danoFinal;
+        return atacante.aplicarPenalidadeDano(danoFinal);
     }
 
     protected void aplicarDano(Criatura atacante, Criatura alvo, int dano) {
@@ -180,7 +180,7 @@ public abstract class Arma {
         }
 
         atacante.narrar("forcou um acerto critico com " + this.nome + ".");
-        return (int) Math.round(danoBase * multiplicadorFinal);
+        return atacante.aplicarPenalidadeDano((int) Math.round(danoBase * multiplicadorFinal));
     }
 
     public int getBonusBloqueioTotal() {

@@ -21,6 +21,7 @@ public class Batalha {
         LogCombate.titulo("#####################");
         LogCombate.titulo("A Grande Batalha");
         LogCombate.titulo("#####################");
+        LogCombate.evento("Desafiante inimigo: " + this.inimigo.getFichaCombate());
 
         this.jogador.fraseApresentacao();
         this.inimigo.fraseApresentacao();
@@ -29,13 +30,24 @@ public class Batalha {
             this.rodadas++;
             System.out.println("Rodada numero: " + this.rodadas);
 
+            this.jogador.processarInicioTurno();
+            if (!this.jogador.estaVivo()) {
+                break;
+            }
+
             this.jogador.mostrarVida();
             this.inimigo.mostrarVida();
 
             controladorBatalha.executarTurnoJogador(this.jogador, this.inimigo);
+            this.jogador.processarFimTurno();
 
             if (this.inimigo.estaVivo()) {
+                this.inimigo.processarInicioTurno();
+                if (!this.inimigo.estaVivo()) {
+                    break;
+                }
                 this.inimigo.fazAtaque(this.jogador);
+                this.inimigo.processarFimTurno();
             }
 
             this.jogador.avancarTurno();
