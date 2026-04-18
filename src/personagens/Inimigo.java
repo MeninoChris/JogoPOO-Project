@@ -26,4 +26,9 @@ public abstract class Inimigo extends Criatura {
         int danoReduzido = this.defesa.danoReduzido(dano);
         super.tomaDano(danoReduzido);
     }
+
+    public void tomaDanoIgnorandoDefesa(int dano) {
+        System.out.println("A defesa de " + this.getNome() + " foi ignorada.");
+        super.tomaDano(dano);
+    }
 }

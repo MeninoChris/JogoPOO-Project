@@ -12,7 +12,8 @@ public class PergaminhoCritico extends Consumivel {
             "Aumenta a chance critica em "
                 + bonusChanceCritico
                 + "% e o multiplicador critico em +"
-                + bonusMultiplicadorCritico
+                + bonusMultiplicadorCritico,
+            TipoConsumivel.APRIMORAMENTO
         );
         this.bonusChanceCritico = bonusChanceCritico;
         this.bonusMultiplicadorCritico = bonusMultiplicadorCritico;

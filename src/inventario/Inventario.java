@@ -2,6 +2,7 @@ package inventario;
 
 import armas.Arma;
 import itens.Consumivel;
+import itens.TipoConsumivel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,5 +54,27 @@ public class Inventario {
         for (int i = 0; i < this.consumiveis.size(); i++) {
             System.out.println((i + 1) + " - " + this.consumiveis.get(i).getDescricaoCompleta());
         }
+    }
+
+    public List<Consumivel> getConsumiveisDeCura() {
+        return filtrarConsumiveis(TipoConsumivel.CURA);
+    }
+
+    public List<Consumivel> getConsumiveisDeAprimoramento() {
+        return filtrarConsumiveis(TipoConsumivel.APRIMORAMENTO);
+    }
+
+    public void removerConsumivel(Consumivel consumivel) {
+        this.consumiveis.remove(consumivel);
+    }
+
+    private List<Consumivel> filtrarConsumiveis(TipoConsumivel tipoConsumivel) {
+        List<Consumivel> filtrados = new ArrayList<>();
+        for (Consumivel consumivel : this.consumiveis) {
+            if (consumivel.getTipoConsumivel() == tipoConsumivel) {
+                filtrados.add(consumivel);
+            }
+        }
+        return filtrados;
     }
 }

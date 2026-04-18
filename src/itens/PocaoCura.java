@@ -6,7 +6,7 @@ public class PocaoCura extends Consumivel {
     private final int cura;
 
     public PocaoCura(int cura) {
-        super("Pocao de Cura", "Recupera " + cura + " de vida");
+        super("Pocao de Cura", "Recupera " + cura + " de vida", TipoConsumivel.CURA);
         this.cura = cura;
     }
 

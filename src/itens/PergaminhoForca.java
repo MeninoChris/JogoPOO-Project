@@ -6,7 +6,7 @@ public class PergaminhoForca extends Consumivel {
     private final int bonusDano;
 
     public PergaminhoForca(int bonusDano) {
-        super("Pergaminho de Forca", "Aumenta o dano em " + bonusDano);
+        super("Pergaminho de Forca", "Aumenta o dano em " + bonusDano, TipoConsumivel.APRIMORAMENTO);
         this.bonusDano = bonusDano;
     }
 
