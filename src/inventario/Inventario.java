@@ -1,6 +1,6 @@
 package inventario;
 
-import armas.Arma;
+import armas.base.Arma;
 import itens.Consumivel;
 import itens.TipoConsumivel;
 import java.util.ArrayList;
@@ -29,6 +29,15 @@ public class Inventario {
 
     public Arma getArma(int indice) {
         return this.armas.get(indice);
+    }
+
+    public void adicionarArmaSeAusente(Arma arma) {
+        for (Arma armaExistente : this.armas) {
+            if (armaExistente.getClass().equals(arma.getClass())) {
+                return;
+            }
+        }
+        this.armas.add(arma);
     }
 
     public void mostrarArmas() {

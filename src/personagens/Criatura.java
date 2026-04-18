@@ -135,4 +135,26 @@ public abstract class Criatura {
     public int getVidaMaxima() {
         return this.vidaMaxima;
     }
+
+    public void removerEfeitosNegativos() {
+        boolean removeuAlgo = false;
+
+        if (this.duracaoDanoContinuo > 0) {
+            this.efeitoDanoContinuo = null;
+            this.danoContinuoPorTurno = 0;
+            this.duracaoDanoContinuo = 0;
+            removeuAlgo = true;
+        }
+
+        if (this.duracaoReducaoDano > 0) {
+            this.efeitoReducaoDano = null;
+            this.reducaoDanoTemporaria = 0;
+            this.duracaoReducaoDano = 0;
+            removeuAlgo = true;
+        }
+
+        if (removeuAlgo) {
+            narrar("purificou todos os efeitos negativos.");
+        }
+    }
 }

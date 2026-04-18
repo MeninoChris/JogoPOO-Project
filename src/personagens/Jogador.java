@@ -1,21 +1,26 @@
 package personagens;
 
-import armas.AdagaSombria;
-import armas.Arco_e_Flecha;
-import armas.Arma;
-import armas.EscudoGuardiao;
-import armas.Espada;
-import armas.Faca;
-import armas.LaminasGemeas;
-import armas.LancaPerfurante;
-import armas.MachadoBerserker;
-import armas.Pistola;
+import armas.base.Arma;
+import armas.curta.AdagaSombria;
+import armas.curta.EscudoGuardiao;
+import armas.curta.Espada;
+import armas.curta.Faca;
+import armas.curta.LaminasGemeas;
+import armas.curta.MachadoBerserker;
+import armas.longa.Arco_e_Flecha;
+import armas.longa.LancaPerfurante;
+import armas.longa.Pistola;
 import inventario.Inventario;
 import itens.Consumivel;
 import itens.Fruta;
 import itens.PergaminhoCritico;
 import itens.PergaminhoForca;
 import itens.PocaoCura;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import progressao.AtributoEvolutivo;
+import progressao.Talento;
 
 public class Jogador extends Criatura {
     private static final int CHANCE_BLOQUEIO_TOTAL_BASE = 20;
@@ -28,18 +33,28 @@ public class Jogador extends Criatura {
     private static final int AUMENTO_BLOQUEIO_POR_NIVEL = 3;
     private static final int AUMENTO_PARRY_POR_NIVEL = 2;
     private static final int AUMENTO_ESCUDO_TEMPORARIO_POR_NIVEL = 8;
+    private static final int AUMENTO_DANO_ESPECIAL_POR_NIVEL = 10;
+    private static final int AUMENTO_CURA_POR_NIVEL = 12;
 
     private final Inventario inventario;
+    private final EnumSet<Talento> talentos;
     private int nivel;
     private int experienciaAtual;
     private int experienciaTotal;
     private int experienciaProximoNivel;
+    private int pontosAtributoDisponiveis;
+    private int pontosTalentoDisponiveis;
     private int bonusDano;
+    private int bonusDanoEspecial;
     private int bonusChanceCritico;
     private double bonusMultiplicadorCritico;
     private int bonusBloqueioTotal;
     private int bonusParry;
     private int bonusEscudoTemporario;
+    private int bonusCura;
+    private double bonusReducaoDefensiva;
+    private int bonusDanoParry;
+    private boolean curaPurificadora;
     private boolean defendendo;
     private int recargaHabilidadeEspecial;
     private int indiceUltimaArmaUsada;
@@ -75,6 +90,7 @@ public class Jogador extends Criatura {
                 new PergaminhoCritico(20, 0.5)
             }
         );
+        this.talentos = EnumSet.noneOf(Talento.class);
         this.nivel = 1;
         this.experienciaProximoNivel = EXPERIENCIA_INICIAL_PROXIMO_NIVEL;
         this.indiceArmaDeGuarda = 0;
@@ -127,14 +143,14 @@ public class Jogador extends Criatura {
     }
 
     public void usarHabilidadeEspecial(Criatura alvo) {
-        int danoEspecial = 180 + this.bonusDano;
+        int danoEspecial = 180 + this.bonusDano + this.bonusDanoEspecial;
         narrar("usou Golpe Heroico. Dano previsto: " + danoEspecial + ". Recarga: 3 turnos.");
         alvo.tomaDano(danoEspecial, this);
         this.recargaHabilidadeEspecial = 3;
     }
 
     public String getDescricaoHabilidadeEspecial() {
-        return "Golpe Heroico - causa 180 + bonus de dano e entra em recarga por 3 turnos";
+        return "Golpe Heroico - causa 180 + bonus de dano + bonus especial e entra em recarga por 3 turnos";
     }
 
     public String getResumoProgressao() {
@@ -156,7 +172,22 @@ public class Jogador extends Criatura {
             + this.bonusBloqueioTotal
             + "% | Parry +"
             + this.bonusParry
-            + "%";
+            + "% | Pontos atributo "
+            + this.pontosAtributoDisponiveis
+            + " | Pontos talento "
+            + this.pontosTalentoDisponiveis;
+    }
+
+    public String getResumoTalentos() {
+        if (this.talentos.isEmpty()) {
+            return "Nenhum talento aprendido";
+        }
+
+        List<String> nomes = new ArrayList<>();
+        for (Talento talento : this.talentos) {
+            nomes.add(talento.getNomeExibicao());
+        }
+        return String.join(", ", nomes);
     }
 
     public void avancarTurno() {
@@ -208,7 +239,11 @@ public class Jogador extends Criatura {
                 return;
             }
 
-            int danoReduzido = (int) Math.ceil(dano * armaDefensiva.getMultiplicadorReducaoDefensiva());
+            double multiplicador = armaDefensiva.getMultiplicadorReducaoDefensiva() - this.bonusReducaoDefensiva;
+            if (multiplicador < 0.05) {
+                multiplicador = 0.05;
+            }
+            int danoReduzido = (int) Math.ceil(dano * multiplicador);
             narrar("reduziu o dano usando a postura defensiva.");
             super.tomaDano(danoReduzido);
             return;
@@ -262,6 +297,15 @@ public class Jogador extends Criatura {
         narrar("recebeu um escudo temporario de " + valorFinal + ".");
     }
 
+    public void aplicarRecuperacao(int curaBase, int escudoBase) {
+        int curaFinal = curaBase + this.bonusCura;
+        curar(curaFinal);
+        aplicarEscudoTemporario(escudoBase);
+        if (this.curaPurificadora) {
+            removerEfeitosNegativos();
+        }
+    }
+
     public int ganharExperiencia(int experiencia) {
         int niveisGanhos = 0;
         this.experienciaAtual += experiencia;
@@ -290,13 +334,75 @@ public class Jogador extends Criatura {
         return this.experienciaProximoNivel;
     }
 
+    public int getPontosAtributoDisponiveis() {
+        return this.pontosAtributoDisponiveis;
+    }
+
+    public int getPontosTalentoDisponiveis() {
+        return this.pontosTalentoDisponiveis;
+    }
+
+    public List<Talento> getTalentosDisponiveis() {
+        List<Talento> disponiveis = new ArrayList<>();
+        for (Talento talento : Talento.values()) {
+            if (talento.estaDisponivel(this.nivel, this.talentos)) {
+                disponiveis.add(talento);
+            }
+        }
+        return disponiveis;
+    }
+
+    public void investirAtributo(AtributoEvolutivo atributo) {
+        if (this.pontosAtributoDisponiveis <= 0) {
+            return;
+        }
+
+        this.pontosAtributoDisponiveis--;
+        switch (atributo) {
+            case VIGOR:
+                aumentarVidaMaxima(60);
+                restaurarVidaTotal();
+                narrar("investiu em Vigor.");
+                break;
+            case FORCA:
+                this.bonusDano += 10;
+                this.bonusDanoEspecial += 20;
+                narrar("investiu em Forca.");
+                break;
+            case PRECISAO:
+                this.bonusChanceCritico += 5;
+                this.bonusMultiplicadorCritico += 0.10;
+                narrar("investiu em Precisao.");
+                break;
+            case GUARDA:
+                this.bonusBloqueioTotal += 6;
+                this.bonusParry += 4;
+                this.bonusEscudoTemporario += 10;
+                narrar("investiu em Guarda.");
+                break;
+            default:
+                break;
+        }
+    }
+
+    public void aprenderTalento(Talento talento) {
+        if (this.pontosTalentoDisponiveis <= 0 || this.talentos.contains(talento)) {
+            return;
+        }
+
+        this.pontosTalentoDisponiveis--;
+        this.talentos.add(talento);
+        aplicarEfeitoTalento(talento);
+        narrar("aprendeu o talento " + talento.getNomeExibicao() + ".");
+    }
+
     private boolean sortearChance(int chance) {
         return Math.random() * 100 < chance;
     }
 
     private void executarParry(Criatura alvo) {
         Arma armaParry = this.inventario.getArma(this.indiceUltimaArmaUsada);
-        int danoParry = armaParry.calcularDanoCriticoGarantido(this);
+        int danoParry = armaParry.calcularDanoCriticoGarantido(this) + this.bonusDanoParry;
         narrar(
             "contra-atacou com "
                 + armaParry.getNomeExibicao()
@@ -318,18 +424,25 @@ public class Jogador extends Criatura {
     private void subirNivel() {
         this.nivel++;
         this.experienciaProximoNivel = calcularExperienciaProximoNivel();
+        this.pontosAtributoDisponiveis++;
+        if (this.nivel % 2 == 0) {
+            this.pontosTalentoDisponiveis++;
+        }
         aumentarVidaMaxima(AUMENTO_VIDA_POR_NIVEL);
         restaurarVidaTotal();
         this.bonusDano += AUMENTO_DANO_POR_NIVEL;
+        this.bonusDanoEspecial += AUMENTO_DANO_ESPECIAL_POR_NIVEL;
         this.bonusChanceCritico += AUMENTO_CRITICO_POR_NIVEL;
         this.bonusMultiplicadorCritico += AUMENTO_MULTIPLICADOR_CRITICO_POR_NIVEL;
         this.bonusBloqueioTotal += AUMENTO_BLOQUEIO_POR_NIVEL;
         this.bonusParry += AUMENTO_PARRY_POR_NIVEL;
         this.bonusEscudoTemporario += AUMENTO_ESCUDO_TEMPORARIO_POR_NIVEL;
+        this.bonusCura += AUMENTO_CURA_POR_NIVEL;
+        desbloquearArmasPorNivel();
         narrar(
             "subiu para o nivel "
                 + this.nivel
-                + ". Atributos aumentados e vida restaurada completamente."
+                + ". Atributos base aumentados, vida restaurada e novas escolhas disponiveis."
         );
     }
 
@@ -343,5 +456,91 @@ public class Jogador extends Criatura {
 
     private int getChanceParryComArma(Arma armaDefensiva) {
         return CHANCE_PARRY_BASE + this.bonusParry + armaDefensiva.getBonusParry();
+    }
+
+    private void aplicarEfeitoTalento(Talento talento) {
+        switch (talento) {
+            case FEROCIDADE:
+                this.bonusDano += 18;
+                this.bonusDanoEspecial += 30;
+                break;
+            case BASTIAO:
+                this.bonusBloqueioTotal += 10;
+                this.bonusParry += 10;
+                this.bonusReducaoDefensiva += 0.08;
+                break;
+            case ALQUIMISTA:
+                this.bonusCura += 40;
+                this.bonusEscudoTemporario += 25;
+                break;
+            case EXECUTOR:
+                this.bonusChanceCritico += 8;
+                this.bonusMultiplicadorCritico += 0.25;
+                this.bonusDanoEspecial += 35;
+                break;
+            case PAREDE_DE_ACO:
+                this.bonusBloqueioTotal += 15;
+                this.bonusParry += 12;
+                this.bonusReducaoDefensiva += 0.12;
+                break;
+            case TRANSMUTADOR:
+                this.bonusCura += 70;
+                this.bonusEscudoTemporario += 40;
+                this.curaPurificadora = true;
+                break;
+            case LAMINA_ASCENDENTE:
+                this.bonusDano += 25;
+                this.bonusChanceCritico += 10;
+                this.bonusDanoEspecial += 60;
+                break;
+            case PARRY_LENDARIO:
+                this.bonusBloqueioTotal += 20;
+                this.bonusParry += 18;
+                this.bonusDanoParry += 80;
+                this.bonusReducaoDefensiva += 0.12;
+                break;
+            case ELIXIR_DA_FENIX:
+                this.bonusCura += 100;
+                this.bonusEscudoTemporario += 60;
+                this.curaPurificadora = true;
+                aumentarVidaMaxima(80);
+                restaurarVidaTotal();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void desbloquearArmasPorNivel() {
+        switch (this.nivel) {
+            case 2:
+                desbloquearArma(new AdagaSombria());
+                break;
+            case 3:
+                desbloquearArma(new EscudoGuardiao());
+                break;
+            case 4:
+                desbloquearArma(new LancaPerfurante());
+                break;
+            case 5:
+                desbloquearArma(new LaminasGemeas());
+                break;
+            case 6:
+                desbloquearArma(new MachadoBerserker());
+                break;
+            case 7:
+                desbloquearArma(new Pistola());
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void desbloquearArma(Arma arma) {
+        int quantidadeAntes = this.inventario.getQuantidadeArmas();
+        this.inventario.adicionarArmaSeAusente(arma);
+        if (this.inventario.getQuantidadeArmas() > quantidadeAntes) {
+            narrar("desbloqueou a arma " + arma.getNomeExibicao() + ".");
+        }
     }
 }

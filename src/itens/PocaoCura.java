@@ -22,7 +22,6 @@ public class PocaoCura extends Consumivel {
 
     @Override
     public void usar(Jogador jogador) {
-        jogador.curar(this.cura);
-        jogador.aplicarEscudoTemporario(this.escudoTemporario);
+        jogador.aplicarRecuperacao(this.cura, this.escudoTemporario);
     }
 }

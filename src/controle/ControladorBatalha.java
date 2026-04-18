@@ -1,23 +1,25 @@
 package controle;
 
 import combate.LogCombate;
-import armas.AdagaSombria;
-import armas.Arco_e_Flecha;
-import armas.Arma;
-import armas.EscudoGuardiao;
-import armas.Espada;
-import armas.Faca;
-import armas.LaminasGemeas;
-import armas.LancaPerfurante;
-import armas.MachadoBerserker;
-import armas.Pistola;
-import armas.TipoArma;
+import armas.base.Arma;
+import armas.base.TipoArma;
+import armas.curta.AdagaSombria;
+import armas.curta.EscudoGuardiao;
+import armas.curta.Espada;
+import armas.curta.Faca;
+import armas.curta.LaminasGemeas;
+import armas.curta.MachadoBerserker;
+import armas.longa.Arco_e_Flecha;
+import armas.longa.LancaPerfurante;
+import armas.longa.Pistola;
 import inventario.Inventario;
 import itens.Consumivel;
 import java.util.List;
 import java.util.Scanner;
 import personagens.Inimigo;
 import personagens.Jogador;
+import progressao.AtributoEvolutivo;
+import progressao.Talento;
 
 public class ControladorBatalha {
     private final Scanner scanner;
@@ -73,6 +75,30 @@ public class ControladorBatalha {
                     break;
             }
         }
+    }
+
+    public void processarEvolucao(Jogador jogador) {
+        if (jogador.getPontosAtributoDisponiveis() == 0 && jogador.getPontosTalentoDisponiveis() == 0) {
+            return;
+        }
+
+        LogCombate.evento("");
+        LogCombate.evento("Evolucao do jogador:");
+        LogCombate.evento(jogador.getResumoProgressao());
+
+        while (jogador.getPontosAtributoDisponiveis() > 0) {
+            escolherAtributo(jogador);
+        }
+
+        while (jogador.getPontosTalentoDisponiveis() > 0) {
+            if (!escolherTalento(jogador)) {
+                break;
+            }
+        }
+
+        LogCombate.evento("Progressao atualizada:");
+        LogCombate.evento(jogador.getResumoProgressao());
+        LogCombate.evento("Talentos: " + jogador.getResumoTalentos());
     }
 
     private void executarAtaque(Jogador jogador, Inimigo inimigo) {
@@ -165,6 +191,8 @@ public class ControladorBatalha {
         LogCombate.evento("Resumo de preparacao do jogador:");
         LogCombate.evento("Progressao:");
         LogCombate.evento(jogador.getResumoProgressao());
+        LogCombate.evento("Talentos:");
+        LogCombate.evento(jogador.getResumoTalentos());
         LogCombate.evento("Habilidade especial:");
         LogCombate.evento("1 - " + jogador.getDescricaoHabilidadeEspecial());
 
@@ -183,6 +211,49 @@ public class ControladorBatalha {
             LogCombate.evento((i + 1) + " - " + consumivel.getNomeExibicao() + ": " + consumivel.getDescricaoPreBatalha());
         }
         LogCombate.evento("");
+    }
+
+    private void escolherAtributo(Jogador jogador) {
+        LogCombate.evento("Escolha um atributo para evoluir:");
+        AtributoEvolutivo[] atributos = AtributoEvolutivo.values();
+        for (int i = 0; i < atributos.length; i++) {
+            LogCombate.evento(
+                (i + 1)
+                    + " - "
+                    + atributos[i].getNomeExibicao()
+                    + ": "
+                    + atributos[i].getDescricao()
+            );
+        }
+
+        int escolha = lerEscolhaValida(atributos.length);
+        jogador.investirAtributo(atributos[escolha - 1]);
+    }
+
+    private boolean escolherTalento(Jogador jogador) {
+        List<Talento> talentosDisponiveis = jogador.getTalentosDisponiveis();
+        if (talentosDisponiveis.isEmpty()) {
+            LogCombate.evento("Nenhum talento disponivel no momento, ponto de talento sera mantido.");
+            return false;
+        }
+
+        LogCombate.evento("Escolha um talento:");
+        for (int i = 0; i < talentosDisponiveis.size(); i++) {
+            Talento talento = talentosDisponiveis.get(i);
+            LogCombate.evento(
+                (i + 1)
+                    + " - "
+                    + talento.getNomeExibicao()
+                    + " (nivel minimo "
+                    + talento.getNivelMinimo()
+                    + "): "
+                    + talento.getDescricao()
+            );
+        }
+
+        int escolha = lerEscolhaValida(talentosDisponiveis.size());
+        jogador.aprenderTalento(talentosDisponiveis.get(escolha - 1));
+        return true;
     }
 
     private Arma[] criarOpcoesDeArma(TipoArma tipoArma) {

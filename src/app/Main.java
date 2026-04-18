@@ -30,13 +30,16 @@ public class Main {
                 break;
             }
 
+            controladorBatalha.processarEvolucao(jogador);
+
             if (i < inimigos.length - 1) {
-                System.out.println("O jogador venceu e sera preparado para a proxima batalha.");
+                LogCombate.evento("O jogador venceu e sera preparado para a proxima batalha.");
                 jogador.prepararParaNovaBatalha();
             }
         }
 
         historicoBatalhas.exibirResumo();
         LogCombate.evento("Estado final do jogador: " + jogador.getResumoProgressao());
+        LogCombate.evento("Talentos finais: " + jogador.getResumoTalentos());
     }
 }
