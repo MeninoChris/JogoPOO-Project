@@ -30,14 +30,18 @@ public class Main {
                 break;
             }
 
+            controladorBatalha.exibirPreviewProximoTier(jogador);
             controladorBatalha.processarEvolucao(jogador);
 
             if (i < inimigos.length - 1) {
+                controladorBatalha.configurarArmaPrincipalEntreBatalhas(jogador);
+                LogCombate.secao("Transicao de Batalha");
                 LogCombate.evento("O jogador venceu e sera preparado para a proxima batalha.");
                 jogador.prepararParaNovaBatalha();
             }
         }
 
+        LogCombate.secao("Encerramento");
         historicoBatalhas.exibirResumo();
         LogCombate.evento("Estado final do jogador: " + jogador.getResumoProgressao());
         LogCombate.evento("Talentos finais: " + jogador.getResumoTalentos());

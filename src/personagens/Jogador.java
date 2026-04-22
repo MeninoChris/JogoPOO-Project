@@ -32,6 +32,11 @@ public class Jogador extends Criatura {
     private static final int AUMENTO_ESCUDO_TEMPORARIO_POR_NIVEL = 8;
     private static final int AUMENTO_DANO_ESPECIAL_POR_NIVEL = 10;
     private static final int AUMENTO_CURA_POR_NIVEL = 12;
+    private static final int BONUS_DANO_ARMA_PRINCIPAL = 15;
+    private static final int BONUS_ACERTO_ARMA_PRINCIPAL = 8;
+    private static final int BONUS_CRITICO_ARMA_PRINCIPAL = 5;
+    private static final int BONUS_BLOQUEIO_ARMA_PRINCIPAL = 6;
+    private static final int BONUS_PARRY_ARMA_PRINCIPAL = 4;
 
     private final Inventario inventario;
     private final EnumSet<Talento> talentos;
@@ -92,7 +97,11 @@ public class Jogador extends Criatura {
 
     public void atacarComArma(int indiceArma, Criatura alvo) {
         this.indiceUltimaArmaUsada = indiceArma;
-        this.inventario.getArma(indiceArma).golpe(this, alvo);
+        Arma armaEscolhida = this.inventario.getArma(indiceArma);
+        armaEscolhida.golpe(this, alvo);
+        if (armaEscolhida.usaMunicaoLimitada()) {
+            narrar("municao restante de " + armaEscolhida.getNomeExibicao() + ": " + armaEscolhida.getResumoMunicaoAtual() + ".");
+        }
     }
 
     public void usarConsumivel(Consumivel consumivel) {
@@ -168,6 +177,24 @@ public class Jogador extends Criatura {
             nomes.add(talento.getNomeExibicao());
         }
         return String.join(", ", nomes);
+    }
+
+    public List<Talento> getTalentosAprendidos() {
+        return new ArrayList<>(this.talentos);
+    }
+
+    public String getResumoBonusArmaPrincipal() {
+        return "+"
+            + BONUS_DANO_ARMA_PRINCIPAL
+            + " dano, +"
+            + BONUS_ACERTO_ARMA_PRINCIPAL
+            + "% precisao, +"
+            + BONUS_CRITICO_ARMA_PRINCIPAL
+            + "% critico, +"
+            + BONUS_BLOQUEIO_ARMA_PRINCIPAL
+            + "% bloqueio e +"
+            + BONUS_PARRY_ARMA_PRINCIPAL
+            + "% parry.";
     }
 
     public void avancarTurno() {
@@ -326,19 +353,32 @@ public class Jogador extends Criatura {
 
     public List<Talento> getTalentosDisponiveis() {
         List<Talento> disponiveis = new ArrayList<>();
-        int proximaCamada = this.talentos.size() + 1;
-        for (Talento talento : Talento.values()) {
-            if (this.talentos.contains(talento)) {
-                continue;
-            }
-            if (talento.getCamada() != proximaCamada) {
-                continue;
-            }
-            if (talento.estaDisponivel(this.nivel)) {
-                disponiveis.add(talento);
+        for (Talento.RamoTalento ramo : Talento.RamoTalento.values()) {
+            Talento proximoTalento = getProximoTalentoDoRamo(ramo);
+            if (proximoTalento != null && proximoTalento.estaDisponivel(this.nivel)) {
+                disponiveis.add(proximoTalento);
             }
         }
         return disponiveis;
+    }
+
+    public int getBonusDanoComArma(Arma arma) {
+        return this.bonusDano + (recebeBonusArmaPrincipal(arma) ? BONUS_DANO_ARMA_PRINCIPAL : 0);
+    }
+
+    public int getBonusChanceAcertoComArma(Arma arma) {
+        if (recebeBonusArmaPrincipal(arma)) {
+            return BONUS_ACERTO_ARMA_PRINCIPAL;
+        }
+        return 0;
+    }
+
+    public int getBonusChanceCriticoComArma(Arma arma) {
+        return this.bonusChanceCritico + (recebeBonusArmaPrincipal(arma) ? BONUS_CRITICO_ARMA_PRINCIPAL : 0);
+    }
+
+    public double getBonusMultiplicadorCriticoComArma(Arma arma) {
+        return this.bonusMultiplicadorCritico;
     }
 
     public void investirAtributo(AtributoEvolutivo atributo) {
@@ -438,11 +478,13 @@ public class Jogador extends Criatura {
     }
 
     private int getChanceBloqueioTotalComArma(Arma armaDefensiva) {
-        return CHANCE_BLOQUEIO_TOTAL_BASE + this.bonusBloqueioTotal + armaDefensiva.getBonusBloqueioTotal();
+        int bonusPrincipal = recebeBonusArmaPrincipal(armaDefensiva) ? BONUS_BLOQUEIO_ARMA_PRINCIPAL : 0;
+        return CHANCE_BLOQUEIO_TOTAL_BASE + this.bonusBloqueioTotal + armaDefensiva.getBonusBloqueioTotal() + bonusPrincipal;
     }
 
     private int getChanceParryComArma(Arma armaDefensiva) {
-        return CHANCE_PARRY_BASE + this.bonusParry + armaDefensiva.getBonusParry();
+        int bonusPrincipal = recebeBonusArmaPrincipal(armaDefensiva) ? BONUS_PARRY_ARMA_PRINCIPAL : 0;
+        return CHANCE_PARRY_BASE + this.bonusParry + armaDefensiva.getBonusParry() + bonusPrincipal;
     }
 
     private void aplicarEfeitoTalento(Talento talento) {
@@ -529,5 +571,28 @@ public class Jogador extends Criatura {
         if (this.inventario.getQuantidadeArmas() > quantidadeAntes) {
             narrar("desbloqueou a arma " + arma.getNomeExibicao() + ".");
         }
+    }
+
+    private Talento getProximoTalentoDoRamo(Talento.RamoTalento ramo) {
+        int maiorCamadaAprendida = 0;
+
+        for (Talento talento : this.talentos) {
+            if (talento.getRamo() == ramo && talento.getCamada() > maiorCamadaAprendida) {
+                maiorCamadaAprendida = talento.getCamada();
+            }
+        }
+
+        int proximaCamada = maiorCamadaAprendida + 1;
+        for (Talento talento : Talento.values()) {
+            if (talento.getRamo() == ramo && talento.getCamada() == proximaCamada) {
+                return talento;
+            }
+        }
+
+        return null;
+    }
+
+    private boolean recebeBonusArmaPrincipal(Arma arma) {
+        return this.inventario.isArmaPrincipal(arma);
     }
 }

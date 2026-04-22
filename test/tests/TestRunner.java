@@ -17,11 +17,12 @@ public final class TestRunner {
 
     public static void main(String[] args) {
         TestCase[] tests = new TestCase[] {
-            new TestCase("progressao_e_talentos_por_camada", TestRunner::testarProgressaoETalentosPorCamada),
+            new TestCase("progressao_e_talentos_por_ramo", TestRunner::testarProgressaoETalentosPorRamo),
             new TestCase("reset_entre_batalhas", TestRunner::testarResetEntreBatalhas),
             new TestCase("efeitos_de_status", TestRunner::testarEfeitosDeStatus),
             new TestCase("defesas_basicas", TestRunner::testarDefesasBasicas),
             new TestCase("armas_especiais", TestRunner::testarArmasEspeciais),
+            new TestCase("arma_principal_e_municao_visivel", TestRunner::testarArmaPrincipalEMunicaoVisivel),
             new TestCase("critico_garantido", TestRunner::testarCriticoGarantido)
         };
 
@@ -46,7 +47,7 @@ public final class TestRunner {
         System.out.println("Todos os testes passaram: " + aprovados);
     }
 
-    private static void testarProgressaoETalentosPorCamada() {
+    private static void testarProgressaoETalentosPorRamo() {
         Jogador jogador = novoJogadorPadrao();
 
         Assertions.assertEquals(1, jogador.getNivel(), "O jogador deve iniciar no nivel 1.");
@@ -63,14 +64,19 @@ public final class TestRunner {
             Talento.ALQUIMISTA
         );
 
-        jogador.aprenderTalento(Talento.BASTIAO);
+        jogador.aprenderTalento(Talento.FEROCIDADE);
 
         Assertions.assertEquals(
-            "Bastiao",
+            "Ferocidade",
             jogador.getResumoTalentos(),
             "A primeira escolha de talento deve ser registrada."
         );
         Assertions.assertEquals(0, jogador.getPontosTalentoDisponiveis(), "O ponto de talento deve ser consumido.");
+        Assertions.assertTalentosDisponiveis(
+            jogador,
+            Talento.BASTIAO,
+            Talento.ALQUIMISTA
+        );
 
         jogador.ganharExperiencia(220);
 
@@ -79,14 +85,23 @@ public final class TestRunner {
         Assertions.assertTalentosDisponiveis(
             jogador,
             Talento.EXECUTOR,
-            Talento.PAREDE_DE_ACO,
-            Talento.TRANSMUTADOR
+            Talento.BASTIAO,
+            Talento.ALQUIMISTA
         );
 
         jogador.aprenderTalento(Talento.EXECUTOR);
         Assertions.assertTrue(
-            jogador.getResumoTalentos().contains("Bastiao") && jogador.getResumoTalentos().contains("Executor"),
-            "O segundo talento deve poder seguir um caminho diferente do primeiro."
+            jogador.getResumoTalentos().contains("Ferocidade") && jogador.getResumoTalentos().contains("Executor"),
+            "O segundo talento deve continuar o mesmo ramo quando o jogador quiser."
+        );
+
+        jogador.ganharExperiencia(280);
+        Assertions.assertEquals(4, jogador.getNivel(), "Apos a progressao seguinte o jogador deve chegar ao nivel 4.");
+        Assertions.assertTalentosDisponiveis(
+            jogador,
+            Talento.LAMINA_ASCENDENTE,
+            Talento.BASTIAO,
+            Talento.ALQUIMISTA
         );
     }
 
@@ -206,13 +221,60 @@ public final class TestRunner {
         Assertions.assertEquals(60, alvoComDefesa.getVidaAtual(), "A lanca perfurante deve ignorar a defesa quando ativada.");
     }
 
+    private static void testarArmaPrincipalEMunicaoVisivel() {
+        Jogador jogador = novoJogadorPadrao();
+        Arma faca = jogador.getInventario().getArma(0);
+
+        Assertions.assertContains(
+            jogador.getInventario().getDescricaoArmaOrdenada(1),
+            "Municao = 6/6",
+            "Armas com municao devem exibir o valor atual e o maximo."
+        );
+        Assertions.assertContains(
+            jogador.getResumoBonusArmaPrincipal(),
+            "+15 dano",
+            "O resumo do bonus da arma principal deve ser exibido ao jogador."
+        );
+
+        int danoComFacaPrincipal = faca.calcularDanoCriticoGarantido(jogador);
+
+        jogador.getInventario().definirArmaPrincipal(1);
+
+        int danoComFacaReserva = faca.calcularDanoCriticoGarantido(jogador);
+
+        Assertions.assertEquals(
+            83,
+            danoComFacaPrincipal,
+            "A arma principal deve receber bonus real de dano."
+        );
+        Assertions.assertEquals(
+            60,
+            danoComFacaReserva,
+            "Ao sair do slot principal a arma nao deve manter o bonus."
+        );
+        Assertions.assertContains(
+            jogador.getInventario().getDescricaoArmaOrdenada(0),
+            "[Principal]",
+            "A arma promovida deve aparecer como principal no inventario."
+        );
+        Assertions.assertContains(
+            jogador.getInventario().getDescricaoArmaOrdenada(0),
+            "Municao = 6/6",
+            "A pistola promovida a principal deve continuar exibindo a municao."
+        );
+    }
+
     private static void testarCriticoGarantido() {
         Jogador jogador = novoJogadorPadrao();
         jogador.adicionarBonusDano(10);
         jogador.adicionarBonusCritico(0, 0.5);
 
         int danoCritico = jogador.getInventario().getArma(0).calcularDanoCriticoGarantido(jogador);
-        Assertions.assertEquals(100, danoCritico, "O critico garantido deve considerar bonus de dano e multiplicador.");
+        Assertions.assertEquals(
+            130,
+            danoCritico,
+            "O critico garantido deve considerar bonus de dano, multiplicador e o bonus da arma principal."
+        );
     }
 
     private static Jogador novoJogadorPadrao() {

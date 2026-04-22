@@ -23,9 +23,7 @@ public class Batalha {
 
     public void executar(ControladorBatalha controladorBatalha) {
         this.nivelInicialJogador = this.jogador.getNivel();
-        LogCombate.titulo("#####################");
-        LogCombate.titulo("A Grande Batalha");
-        LogCombate.titulo("#####################");
+        LogCombate.secao("A Grande Batalha");
         LogCombate.evento("Desafiante inimigo: " + this.inimigo.getFichaCombate());
         LogCombate.evento("Status do jogador: " + this.jogador.getResumoProgressao());
 
@@ -34,13 +32,14 @@ public class Batalha {
 
         while (this.jogador.estaVivo() && this.inimigo.estaVivo()) {
             this.rodadas++;
-            LogCombate.evento("Rodada numero: " + this.rodadas);
+            LogCombate.subtitulo("Rodada " + this.rodadas);
 
             this.jogador.processarInicioTurno();
             if (!this.jogador.estaVivo()) {
                 break;
             }
 
+            LogCombate.evento("Status atual:");
             this.jogador.mostrarVida();
             this.inimigo.mostrarVida();
 
@@ -48,6 +47,7 @@ public class Batalha {
             this.jogador.processarFimTurno();
 
             if (this.inimigo.estaVivo()) {
+                LogCombate.subtitulo("Turno do Inimigo");
                 this.inimigo.processarInicioTurno();
                 if (!this.inimigo.estaVivo()) {
                     break;
@@ -57,7 +57,6 @@ public class Batalha {
             }
 
             this.jogador.avancarTurno();
-            LogCombate.evento("");
         }
 
         definirVencedor();
@@ -95,6 +94,7 @@ public class Batalha {
     }
 
     private void exibirResultado() {
+        LogCombate.separador();
         if (this.vencedor == this.jogador) {
             this.inimigo.fraseMorte();
             LogCombate.evento(this.jogador.getNome() + " venceu!");

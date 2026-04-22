@@ -82,7 +82,7 @@ public abstract class Arma {
     }
 
     public void golpe(Criatura atacante, Criatura alvo) {
-        if (!tentouAcertar()) {
+        if (!tentouAcertar(atacante)) {
             atacante.narrar("usou " + this.nome + ", mas o ataque falhou.");
             return;
         }
@@ -96,15 +96,23 @@ public abstract class Arma {
         return RD.nextInt(100) < this.chance;
     }
 
+    protected boolean tentouAcertar(Criatura atacante) {
+        int chanceFinal = getChanceAcertoFinal(atacante);
+        if (chanceFinal == this.chance) {
+            return tentouAcertar();
+        }
+        return RD.nextInt(100) < chanceFinal;
+    }
+
     protected int calcularDano(Criatura atacante) {
         int danoFinal = this.ataque;
         int chanceCriticoFinal = this.chanceCritico;
         double multiplicadorCriticoFinal = this.multiplicadorCritico;
 
         if (atacante instanceof Jogador jogador) {
-            danoFinal += jogador.getBonusDano();
-            chanceCriticoFinal += jogador.getBonusChanceCritico();
-            multiplicadorCriticoFinal += jogador.getBonusMultiplicadorCritico();
+            danoFinal += jogador.getBonusDanoComArma(this);
+            chanceCriticoFinal += jogador.getBonusChanceCriticoComArma(this);
+            multiplicadorCriticoFinal += jogador.getBonusMultiplicadorCriticoComArma(this);
         }
 
         if (chanceCriticoFinal > 100) {
@@ -176,8 +184,8 @@ public abstract class Arma {
         double multiplicadorFinal = this.multiplicadorCritico;
 
         if (atacante instanceof Jogador jogador) {
-            danoBase += jogador.getBonusDano();
-            multiplicadorFinal += jogador.getBonusMultiplicadorCritico();
+            danoBase += jogador.getBonusDanoComArma(this);
+            multiplicadorFinal += jogador.getBonusMultiplicadorCriticoComArma(this);
         }
 
         atacante.narrar("forcou um acerto critico com " + this.nome + ".");
@@ -196,11 +204,36 @@ public abstract class Arma {
         return 0.5;
     }
 
+    public boolean usaMunicaoLimitada() {
+        return false;
+    }
+
+    public String getResumoMunicaoAtual() {
+        return "";
+    }
+
     protected String getDescricaoMunicao() {
         return "Municao = infinita";
     }
 
     public void prepararParaNovaBatalha() {}
+
+    private int getChanceAcertoFinal(Criatura atacante) {
+        int chanceFinal = this.chance;
+        if (atacante instanceof Jogador jogador) {
+            chanceFinal += jogador.getBonusChanceAcertoComArma(this);
+        }
+
+        if (chanceFinal > 100) {
+            return 100;
+        }
+
+        if (chanceFinal < 0) {
+            return 0;
+        }
+
+        return chanceFinal;
+    }
 
     private String getDescricaoCategoria() {
         if (this.tipoArma == TipoArma.CURTA_DISTANCIA) {

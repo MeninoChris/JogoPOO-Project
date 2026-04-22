@@ -39,7 +39,17 @@ public abstract class ArmaComMunicao extends Arma {
 
     @Override
     protected String getDescricaoMunicao() {
-        return "Municao = " + this.municao;
+        return "Municao = " + this.municao + "/" + this.municaoMaxima;
+    }
+
+    @Override
+    public boolean usaMunicaoLimitada() {
+        return true;
+    }
+
+    @Override
+    public String getResumoMunicaoAtual() {
+        return this.municao + "/" + this.municaoMaxima;
     }
 
     @Override

@@ -29,12 +29,14 @@ public class ControladorBatalha {
     }
 
     public Jogador configurarJogador() {
+        LogCombate.secao("Criacao do Jogador");
         LogCombate.evento("Digite o nome do jogador:");
         String nome = lerLinhaOuPadrao("MeninoChris", "Sem entrada para nome. Usando nome padrao.");
         if (nome.isEmpty()) {
             nome = "MeninoChris";
         }
 
+        LogCombate.subtitulo("Escolha das Armas Iniciais");
         Arma armaCurta = escolherArmaInicial(TipoArma.CURTA_DISTANCIA);
         Arma armaLonga = escolherArmaInicial(TipoArma.LONGA_DISTANCIA);
 
@@ -47,14 +49,16 @@ public class ControladorBatalha {
     public void executarTurnoJogador(Jogador jogador, Inimigo inimigo) {
         boolean turnoConcluido = false;
 
+        LogCombate.subtitulo("Turno do Jogador");
         while (!turnoConcluido) {
             LogCombate.evento("Escolha uma acao:");
             LogCombate.evento("1 - Atacar");
             LogCombate.evento("2 - Defender");
             LogCombate.evento("3 - Curar");
             LogCombate.evento("4 - Habilidade especial");
+            mostrarPromptEscolha(false);
 
-            int escolha = lerEscolhaValida(4);
+            int escolha = lerEscolhaValida(1, 4);
 
             switch (escolha) {
                 case 1:
@@ -77,17 +81,32 @@ public class ControladorBatalha {
         }
     }
 
+    public void exibirPreviewProximoTier(Jogador jogador) {
+        List<Talento> talentosDisponiveis = jogador.getTalentosDisponiveis();
+        if (talentosDisponiveis.isEmpty()) {
+            return;
+        }
+
+        LogCombate.secao("Preview dos Talentos");
+        LogCombate.evento("Proximos avancos liberados em cada ramo:");
+        LogCombate.evento("Cada ramo sobe no proprio ritmo, sem puxar os outros para o mesmo tier.");
+        mostrarTalentosDisponiveis(talentosDisponiveis);
+    }
+
     public void processarEvolucao(Jogador jogador) {
         if (jogador.getPontosAtributoDisponiveis() == 0 && jogador.getPontosTalentoDisponiveis() == 0) {
             return;
         }
 
-        LogCombate.evento("");
-        LogCombate.evento("Evolucao do jogador:");
+        LogCombate.secao("Evolucao do Jogador");
+        LogCombate.evento("Estado antes da distribuicao:");
         LogCombate.evento(jogador.getResumoProgressao());
+        exibirTalentosAprendidos(jogador);
 
         while (jogador.getPontosAtributoDisponiveis() > 0) {
-            escolherAtributo(jogador);
+            if (!escolherAtributo(jogador)) {
+                break;
+            }
         }
 
         while (jogador.getPontosTalentoDisponiveis() > 0) {
@@ -96,17 +115,56 @@ public class ControladorBatalha {
             }
         }
 
-        LogCombate.evento("Progressao atualizada:");
+        LogCombate.subtitulo("Resumo Atualizado");
         LogCombate.evento(jogador.getResumoProgressao());
-        LogCombate.evento("Talentos: " + jogador.getResumoTalentos());
+        exibirTalentosAprendidos(jogador);
+    }
+
+    public void configurarArmaPrincipalEntreBatalhas(Jogador jogador) {
+        Inventario inventario = jogador.getInventario();
+        if (inventario.getQuantidadeArmas() <= 1) {
+            return;
+        }
+
+        boolean concluido = false;
+        LogCombate.secao("Preparacao da Proxima Batalha");
+
+        while (!concluido) {
+            LogCombate.evento("Arsenal atual:");
+            inventario.mostrarArmas();
+            LogCombate.evento("Bonus da arma principal: " + jogador.getResumoBonusArmaPrincipal());
+            LogCombate.espaco();
+            LogCombate.evento("1 - Manter arma principal atual");
+            LogCombate.evento("2 - Escolher nova arma principal");
+            LogCombate.evento("3 - Ver detalhes dos talentos");
+            mostrarPromptEscolha(false);
+
+            int escolha = lerEscolhaValida(1, 3);
+            switch (escolha) {
+                case 1:
+                    concluido = true;
+                    break;
+                case 2:
+                    escolherArmaPrincipal(jogador);
+                    concluido = true;
+                    break;
+                case 3:
+                    exibirTalentosAprendidos(jogador);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     private void executarAtaque(Jogador jogador, Inimigo inimigo) {
         Inventario inventario = jogador.getInventario();
-        LogCombate.evento("Escolha sua arma:");
+        LogCombate.evento("Escolha sua arma para atacar:");
         inventario.mostrarArmas();
+        LogCombate.evento("A arma principal recebe: " + jogador.getResumoBonusArmaPrincipal());
+        mostrarPromptEscolha(false);
 
-        int escolha = lerEscolhaValida(inventario.getQuantidadeArmas());
+        int escolha = lerEscolhaValida(1, inventario.getQuantidadeArmas());
         jogador.atacarComArma(escolha - 1, inimigo);
     }
 
@@ -119,8 +177,9 @@ public class ControladorBatalha {
 
         LogCombate.evento("Escolha um item de cura:");
         mostrarConsumiveis(itensDeCura);
+        mostrarPromptEscolha(false);
 
-        int escolha = lerEscolhaValida(itensDeCura.size());
+        int escolha = lerEscolhaValida(1, itensDeCura.size());
         jogador.usarConsumivel(itensDeCura.get(escolha - 1));
         return true;
     }
@@ -129,7 +188,10 @@ public class ControladorBatalha {
         Inventario inventario = jogador.getInventario();
         LogCombate.evento("Escolha a arma de guarda para defender:");
         inventario.mostrarArmas();
-        int escolha = lerEscolhaValida(inventario.getQuantidadeArmas());
+        LogCombate.evento("A arma principal recebe: " + jogador.getResumoBonusArmaPrincipal());
+        mostrarPromptEscolha(false);
+
+        int escolha = lerEscolhaValida(1, inventario.getQuantidadeArmas());
         jogador.prepararDefesa(escolha - 1);
     }
 
@@ -137,8 +199,9 @@ public class ControladorBatalha {
         LogCombate.evento("Escolha a habilidade especial:");
         LogCombate.evento("1 - Golpe Heroico");
         LogCombate.evento("2 - Usar pergaminho");
+        mostrarPromptEscolha(false);
 
-        int escolha = lerEscolhaValida(2);
+        int escolha = lerEscolhaValida(1, 2);
         if (escolha == 1) {
             if (!jogador.podeUsarHabilidadeEspecial()) {
                 LogCombate.evento("A habilidade especial ainda esta em recarga.");
@@ -157,8 +220,9 @@ public class ControladorBatalha {
 
         LogCombate.evento("Escolha um item de aprimoramento:");
         mostrarConsumiveis(itensDeBuff);
+        mostrarPromptEscolha(false);
 
-        int itemEscolhido = lerEscolhaValida(itensDeBuff.size());
+        int itemEscolhido = lerEscolhaValida(1, itensDeBuff.size());
         jogador.usarConsumivel(itensDeBuff.get(itemEscolhido - 1));
         return true;
     }
@@ -171,50 +235,59 @@ public class ControladorBatalha {
 
     private Arma escolherArmaInicial(TipoArma tipoArma) {
         Arma[] opcoes = criarOpcoesDeArma(tipoArma);
+        String descricaoSlot;
 
         if (tipoArma == TipoArma.CURTA_DISTANCIA) {
-            LogCombate.evento("Escolha uma arma de curta distancia:");
+            descricaoSlot = "principal";
+            LogCombate.evento("Escolha uma arma de curta distancia para o slot principal:");
         } else {
-            LogCombate.evento("Escolha uma arma de longa distancia:");
+            descricaoSlot = "secundario";
+            LogCombate.evento("Escolha uma arma de longa distancia para o slot secundario:");
         }
 
         for (int i = 0; i < opcoes.length; i++) {
             LogCombate.evento((i + 1) + " - " + opcoes[i].getDescricaoSelecao());
         }
+        mostrarPromptEscolha(false);
 
-        int escolha = lerEscolhaValida(opcoes.length);
+        int escolha = lerEscolhaValida(1, opcoes.length);
+        LogCombate.evento("Arma do slot " + descricaoSlot + " definida: " + opcoes[escolha - 1].getNomeExibicao() + ".");
         return opcoes[escolha - 1];
     }
 
     private void exibirPreparacaoPreBatalha(Jogador jogador) {
-        LogCombate.evento("");
-        LogCombate.evento("Resumo de preparacao do jogador:");
+        LogCombate.secao("Preparacao Inicial");
         LogCombate.evento("Progressao:");
         LogCombate.evento(jogador.getResumoProgressao());
-        LogCombate.evento("Talentos:");
-        LogCombate.evento(jogador.getResumoTalentos());
+        exibirTalentosAprendidos(jogador);
         LogCombate.evento("Habilidade especial:");
         LogCombate.evento("1 - " + jogador.getDescricaoHabilidadeEspecial());
+        LogCombate.evento("Bonus da arma principal:");
+        LogCombate.evento(jogador.getResumoBonusArmaPrincipal());
 
-        LogCombate.evento("Armas escolhidas:");
+        LogCombate.subtitulo("Armas Escolhidas");
         Inventario inventario = jogador.getInventario();
         for (int i = 0; i < inventario.getQuantidadeArmas(); i++) {
             Arma arma = inventario.getArma(i);
-            LogCombate.evento((i + 1) + " - " + arma.getDescricaoSelecao());
+            LogCombate.evento(
+                inventario.getDescricaoArmaOrdenada(i).replace(arma.getDescricaoCombate(), arma.getDescricaoSelecao())
+            );
             LogCombate.evento("    Descricao tatica: " + arma.getDescricaoPreBatalha());
         }
 
-        LogCombate.evento("Consumiveis iniciais:");
+        LogCombate.subtitulo("Consumiveis Iniciais");
         List<Consumivel> consumiveis = inventario.getConsumiveis();
         for (int i = 0; i < consumiveis.size(); i++) {
             Consumivel consumivel = consumiveis.get(i);
             LogCombate.evento((i + 1) + " - " + consumivel.getNomeExibicao() + ": " + consumivel.getDescricaoPreBatalha());
         }
-        LogCombate.evento("");
     }
 
-    private void escolherAtributo(Jogador jogador) {
-        LogCombate.evento("Escolha um atributo para evoluir:");
+    private boolean escolherAtributo(Jogador jogador) {
+        LogCombate.subtitulo("Distribuicao de Atributos");
+        LogCombate.evento("Pontos de atributo disponiveis: " + jogador.getPontosAtributoDisponiveis());
+        LogCombate.evento("0 - Manter pontos para depois");
+
         AtributoEvolutivo[] atributos = AtributoEvolutivo.values();
         for (int i = 0; i < atributos.length; i++) {
             LogCombate.evento(
@@ -225,9 +298,16 @@ public class ControladorBatalha {
                     + atributos[i].getDescricao()
             );
         }
+        mostrarPromptEscolha(true);
 
-        int escolha = lerEscolhaValida(atributos.length);
+        int escolha = lerEscolhaValida(0, atributos.length);
+        if (escolha == 0) {
+            LogCombate.evento("Pontos de atributo mantidos para depois.");
+            return false;
+        }
+
         jogador.investirAtributo(atributos[escolha - 1]);
+        return true;
     }
 
     private boolean escolherTalento(Jogador jogador) {
@@ -237,23 +317,85 @@ public class ControladorBatalha {
             return false;
         }
 
-        LogCombate.evento("Escolha um talento:");
+        LogCombate.subtitulo("Escolha de Talento");
+        LogCombate.evento("Pontos de talento disponiveis: " + jogador.getPontosTalentoDisponiveis());
+        LogCombate.evento("Cada ramo sobe de forma independente.");
+        LogCombate.evento("0 - Manter pontos para depois");
+        mostrarTalentosDisponiveis(talentosDisponiveis);
+        mostrarPromptEscolha(true);
+
+        int escolha = lerEscolhaValida(0, talentosDisponiveis.size());
+        if (escolha == 0) {
+            LogCombate.evento("Pontos de talento mantidos para depois.");
+            return false;
+        }
+
+        jogador.aprenderTalento(talentosDisponiveis.get(escolha - 1));
+        exibirTalentosAprendidos(jogador);
+        return true;
+    }
+
+    private void mostrarTalentosDisponiveis(List<Talento> talentosDisponiveis) {
         for (int i = 0; i < talentosDisponiveis.size(); i++) {
             Talento talento = talentosDisponiveis.get(i);
             LogCombate.evento(
                 (i + 1)
                     + " - "
                     + talento.getNomeExibicao()
-                    + " (nivel minimo "
+                    + " ["
+                    + talento.getNomeRamo()
+                    + "] (tier "
+                    + talento.getCamada()
+                    + ", nivel minimo "
                     + talento.getNivelMinimo()
-                    + "): "
-                    + talento.getDescricao()
+                    + ")"
             );
+            LogCombate.evento("    Tema: " + talento.getDescricao());
+            LogCombate.evento("    Efeito: " + talento.getResumoEfeito());
+        }
+    }
+
+    private void exibirTalentosAprendidos(Jogador jogador) {
+        LogCombate.subtitulo("Talentos Ativos");
+        List<Talento> talentosAprendidos = jogador.getTalentosAprendidos();
+        if (talentosAprendidos.isEmpty()) {
+            LogCombate.evento("Nenhum talento aprendido.");
+            return;
         }
 
-        int escolha = lerEscolhaValida(talentosDisponiveis.size());
-        jogador.aprenderTalento(talentosDisponiveis.get(escolha - 1));
-        return true;
+        for (Talento talento : talentosAprendidos) {
+            LogCombate.evento(
+                "- "
+                    + talento.getNomeExibicao()
+                    + " ["
+                    + talento.getNomeRamo()
+                    + " tier "
+                    + talento.getCamada()
+                    + "]: "
+                    + talento.getResumoEfeito()
+            );
+        }
+    }
+
+    private void escolherArmaPrincipal(Jogador jogador) {
+        Inventario inventario = jogador.getInventario();
+
+        LogCombate.subtitulo("Escolher Nova Arma Principal");
+        LogCombate.evento("0 - Voltar sem alterar");
+        inventario.mostrarArmas();
+        LogCombate.evento("Bonus da arma principal: " + jogador.getResumoBonusArmaPrincipal());
+        mostrarPromptEscolha(true);
+
+        int escolha = lerEscolhaValida(0, inventario.getQuantidadeArmas());
+        if (escolha == 0) {
+            LogCombate.evento("Arma principal mantida.");
+            return;
+        }
+
+        inventario.definirArmaPrincipal(escolha - 1);
+        LogCombate.evento("Nova arma principal definida com sucesso.");
+        LogCombate.evento("Bonus da arma principal: " + jogador.getResumoBonusArmaPrincipal());
+        inventario.mostrarArmas();
     }
 
     private Arma[] criarOpcoesDeArma(TipoArma tipoArma) {
@@ -275,11 +417,22 @@ public class ControladorBatalha {
         };
     }
 
-    private int lerEscolhaValida(int limite) {
+    private void mostrarPromptEscolha(boolean permitirVoltar) {
+        if (permitirVoltar) {
+            LogCombate.evento("Digite o numero desejado ou 0 para voltar:");
+            return;
+        }
+
+        LogCombate.evento("Digite o numero desejado:");
+    }
+
+    private int lerEscolhaValida(int minimo, int maximo) {
         while (true) {
             if (!this.scanner.hasNextLine()) {
-                LogCombate.evento("Entrada encerrada. Selecionando a primeira opcao automaticamente.");
-                return 1;
+                int escolhaPadrao = minimo == 0 ? 0 : 1;
+                LogCombate.evento("Entrada encerrada. Selecionando a opcao padrao automaticamente.");
+                LogCombate.espaco();
+                return escolhaPadrao;
             }
 
             String entrada = normalizarTexto(this.scanner.nextLine());
@@ -290,7 +443,8 @@ public class ControladorBatalha {
 
             try {
                 int escolha = Integer.parseInt(entrada);
-                if (escolha >= 1 && escolha <= limite) {
+                if (escolha >= minimo && escolha <= maximo) {
+                    LogCombate.espaco();
                     return escolha;
                 }
             } catch (NumberFormatException ex) {

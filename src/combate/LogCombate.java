@@ -1,6 +1,8 @@
 package combate;
 
 public final class LogCombate {
+    private static final String SEPARADOR = "--------------------------------------------------";
+
     private LogCombate() {}
 
     public static void titulo(String texto) {
@@ -17,5 +19,25 @@ public final class LogCombate {
 
     public static void narracao(String codinome, String mensagem) {
         System.out.println(codinome + " " + mensagem);
+    }
+
+    public static void espaco() {
+        System.out.println();
+    }
+
+    public static void separador() {
+        System.out.println(SEPARADOR);
+    }
+
+    public static void secao(String titulo) {
+        espaco();
+        separador();
+        System.out.println(titulo);
+        separador();
+    }
+
+    public static void subtitulo(String titulo) {
+        espaco();
+        System.out.println("[" + titulo + "]");
     }
 }

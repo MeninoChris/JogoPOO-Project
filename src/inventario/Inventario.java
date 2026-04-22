@@ -32,6 +32,10 @@ public class Inventario {
         return this.armas.get(indice);
     }
 
+    public boolean isArmaPrincipal(Arma arma) {
+        return !this.armas.isEmpty() && this.armas.get(0) == arma;
+    }
+
     public void adicionarArmaSeAusente(Arma arma) {
         for (Arma armaExistente : this.armas) {
             if (armaExistente.getClass().equals(arma.getClass())) {
@@ -43,8 +47,22 @@ public class Inventario {
 
     public void mostrarArmas() {
         for (int i = 0; i < this.armas.size(); i++) {
-            LogCombate.evento((i + 1) + " - " + this.armas.get(i).getDescricaoCombate());
+            LogCombate.evento(getDescricaoArmaOrdenada(i));
         }
+    }
+
+    public String getDescricaoArmaOrdenada(int indice) {
+        return (indice + 1) + " - [" + getRotuloArma(indice) + "] " + this.armas.get(indice).getDescricaoCombate();
+    }
+
+    public String getRotuloArma(int indice) {
+        if (indice == 0) {
+            return "Principal";
+        }
+        if (indice == 1) {
+            return "Secundaria";
+        }
+        return "Reserva " + (indice - 1);
     }
 
     public List<Consumivel> getConsumiveisDeCura() {
@@ -67,6 +85,15 @@ public class Inventario {
         for (Arma arma : this.armas) {
             arma.prepararParaNovaBatalha();
         }
+    }
+
+    public void definirArmaPrincipal(int indice) {
+        if (indice <= 0 || indice >= this.armas.size()) {
+            return;
+        }
+
+        Arma armaPrincipal = this.armas.remove(indice);
+        this.armas.add(0, armaPrincipal);
     }
 
     private List<Consumivel> filtrarConsumiveis(TipoConsumivel tipoConsumivel) {
