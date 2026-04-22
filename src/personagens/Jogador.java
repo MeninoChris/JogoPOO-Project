@@ -326,8 +326,15 @@ public class Jogador extends Criatura {
 
     public List<Talento> getTalentosDisponiveis() {
         List<Talento> disponiveis = new ArrayList<>();
+        int proximaCamada = this.talentos.size() + 1;
         for (Talento talento : Talento.values()) {
-            if (talento.estaDisponivel(this.nivel, this.talentos)) {
+            if (this.talentos.contains(talento)) {
+                continue;
+            }
+            if (talento.getCamada() != proximaCamada) {
+                continue;
+            }
+            if (talento.estaDisponivel(this.nivel)) {
                 disponiveis.add(talento);
             }
         }
@@ -368,7 +375,7 @@ public class Jogador extends Criatura {
     }
 
     public void aprenderTalento(Talento talento) {
-        if (this.pontosTalentoDisponiveis <= 0 || this.talentos.contains(talento)) {
+        if (this.pontosTalentoDisponiveis <= 0 || !getTalentosDisponiveis().contains(talento)) {
             return;
         }
 
@@ -407,9 +414,7 @@ public class Jogador extends Criatura {
         this.nivel++;
         this.experienciaProximoNivel = calcularExperienciaProximoNivel();
         this.pontosAtributoDisponiveis++;
-        if (this.nivel % 2 == 0) {
-            this.pontosTalentoDisponiveis++;
-        }
+        this.pontosTalentoDisponiveis++;
         aumentarVidaMaxima(AUMENTO_VIDA_POR_NIVEL);
         restaurarVidaTotal();
         this.bonusDano += AUMENTO_DANO_POR_NIVEL;

@@ -1,74 +1,71 @@
 package progressao;
 
-import java.util.Set;
-
 public enum Talento {
     FEROCIDADE(
         "Ferocidade",
         "Caminho ofensivo. Aumenta dano e fortalece a habilidade especial.",
-        2
+        2,
+        1
     ),
     BASTIAO(
         "Bastiao",
         "Caminho defensivo. Aumenta bloqueio, parry e melhora a postura defensiva.",
-        2
+        2,
+        1
     ),
     ALQUIMISTA(
         "Alquimista",
         "Caminho de sustain. Aumenta cura e a protecao gerada pelos itens.",
-        2
+        2,
+        1
     ),
     EXECUTOR(
         "Executor",
         "Segunda camada ofensiva. Aumenta critico e dano de finalizacao.",
-        4,
-        FEROCIDADE
+        3,
+        2
     ),
     PAREDE_DE_ACO(
         "Parede de Aco",
         "Segunda camada defensiva. Fortalece bloqueio, parry e reducao defensiva.",
-        4,
-        BASTIAO
+        3,
+        2
     ),
     TRANSMUTADOR(
         "Transmutador",
         "Segunda camada de sustain. Aumenta muito cura e faz itens dissiparem efeitos.",
-        4,
-        ALQUIMISTA
+        3,
+        2
     ),
     LAMINA_ASCENDENTE(
         "Lamina Ascendente",
         "Topo ofensivo. Aumenta muito dano, critico e habilidade especial.",
-        6,
-        EXECUTOR
+        4,
+        3
     ),
     PARRY_LENDARIO(
         "Parry Lendario",
         "Topo defensivo. Eleva muito parry e transforma contra-ataques em resposta brutal.",
-        6,
-        PAREDE_DE_ACO
+        4,
+        3
     ),
     ELIXIR_DA_FENIX(
         "Elixir da Fenix",
         "Topo de sustain. Itens curam muito mais, protegem mais e limpam efeitos.",
-        6,
-        TRANSMUTADOR
+        4,
+        3
     );
 
     private final String nomeExibicao;
     private final String descricao;
     private final int nivelMinimo;
-    private final Talento preRequisito;
+    private final int camada;
 
-    Talento(String nomeExibicao, String descricao, int nivelMinimo) {
-        this(nomeExibicao, descricao, nivelMinimo, null);
-    }
-
-    Talento(String nomeExibicao, String descricao, int nivelMinimo, Talento preRequisito) {
+    Talento(String nomeExibicao, String descricao, int nivelMinimo, int camada) {
         this.nomeExibicao = nomeExibicao;
         this.descricao = descricao;
         this.nivelMinimo = nivelMinimo;
-        this.preRequisito = preRequisito;
+        this.camada = camada;
     }
 
     public String getNomeExibicao() {
@@ -83,13 +80,11 @@ public enum Talento {
         return this.nivelMinimo;
     }
 
-    public boolean estaDisponivel(int nivelJogador, Set<Talento> talentosAtuais) {
-        if (talentosAtuais.contains(this)) {
-            return false;
-        }
-        if (nivelJogador < this.nivelMinimo) {
-            return false;
-        }
-        return this.preRequisito == null || talentosAtuais.contains(this.preRequisito);
+    public int getCamada() {
+        return this.camada;
+    }
+
+    public boolean estaDisponivel(int nivelJogador) {
+        return nivelJogador >= this.nivelMinimo;
     }
 }
