@@ -72,6 +72,9 @@ public class Batalha {
         String nomeVencedor = this.vencedor == null ? "Sem vencedor" : this.vencedor.getNome();
         return "Batalha contra "
             + this.inimigo.getNome()
+            + " ("
+            + this.inimigo.getResumoAtributos()
+            + ")"
             + " - vencedor: "
             + nomeVencedor
             + " - rodadas: "

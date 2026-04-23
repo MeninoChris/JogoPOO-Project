@@ -1,15 +1,24 @@
 package tests;
 
+import batalha.Batalha;
+import batalha.HistoricoBatalhas;
 import armas.base.Arma;
+import armas.base.TipoArma;
 import armas.curta.Faca;
 import armas.curta.LaminasGemeas;
 import armas.longa.LancaPerfurante;
 import armas.longa.Pistola;
+import controle.ControladorBatalha;
 import defesas.Armadura;
 import defesas.BarreiraMagica;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import personagens.Criatura;
+import personagens.Demonium;
 import personagens.Inimigo;
 import personagens.Jogador;
+import personagens.Malignus;
+import personagens.Necrolis;
 import progressao.Talento;
 
 public final class TestRunner {
@@ -19,6 +28,7 @@ public final class TestRunner {
         TestCase[] tests = new TestCase[] {
             new TestCase("progressao_e_talentos_por_ramo", TestRunner::testarProgressaoETalentosPorRamo),
             new TestCase("reset_entre_batalhas", TestRunner::testarResetEntreBatalhas),
+            new TestCase("campanha_completa_e_historico", TestRunner::testarCampanhaCompletaEHistorico),
             new TestCase("efeitos_de_status", TestRunner::testarEfeitosDeStatus),
             new TestCase("defesas_basicas", TestRunner::testarDefesasBasicas),
             new TestCase("armas_especiais", TestRunner::testarArmasEspeciais),
@@ -152,8 +162,8 @@ public final class TestRunner {
         );
         Assertions.assertContains(
             jogador.getInventario().getArma(1).getDescricaoCombate(),
-            "Municao = 6",
-            "A municao deve ser restaurada entre batalhas."
+            "Municao = 0/6",
+            "A municao nao deve ser restaurada automaticamente entre batalhas."
         );
         Assertions.assertEquals(
             30,
@@ -168,6 +178,41 @@ public final class TestRunner {
             jogador.getVidaAtual(),
             "Efeitos de dano continuo devem ser removidos entre batalhas."
         );
+    }
+
+    private static void testarCampanhaCompletaEHistorico() throws Exception {
+        Jogador jogador = new Jogador("Campanha", new Arma[] { new ArmaFatal("Espada de Teste", 2000), new Faca() });
+        Inimigo[] inimigos = new Inimigo[] { new Malignus(), new Demonium(), new Necrolis() };
+        HistoricoBatalhas historicoBatalhas = new HistoricoBatalhas();
+        ControladorBatalha controlador = new ControladorBatalhaProgramado();
+
+        String saida = capturarSaida(() -> {
+            for (int i = 0; i < inimigos.length; i++) {
+                Batalha batalha = new Batalha(jogador, inimigos[i]);
+                historicoBatalhas.registrar(batalha);
+                batalha.executar(controlador);
+
+                if (!jogador.estaVivo()) {
+                    break;
+                }
+
+                if (i < inimigos.length - 1) {
+                    jogador.prepararParaNovaBatalha();
+                }
+            }
+
+            historicoBatalhas.exibirResumo();
+        });
+
+        Assertions.assertTrue(jogador.estaVivo(), "O jogador deve sobreviver ate o fim da campanha de teste.");
+        Assertions.assertContains(saida, "Historico de batalhas:", "O historico final deve ser impresso.");
+        Assertions.assertContains(saida, "1 - Batalha contra Malignus", "A primeira batalha deve aparecer no resumo.");
+        Assertions.assertContains(saida, "2 - Batalha contra Demonium", "A segunda batalha deve aparecer no resumo.");
+        Assertions.assertContains(saida, "3 - Batalha contra Necrolis", "A terceira batalha deve aparecer no resumo.");
+        Assertions.assertContains(saida, "vencedor: Campanha", "O vencedor de cada batalha deve ser registrado.");
+        Assertions.assertContains(saida, "Vida inicial: 1000", "A ficha dos inimigos deve expor a vida inicial.");
+        Assertions.assertContains(saida, "Ataque base: 50", "A ficha dos inimigos deve expor o ataque base.");
+        Assertions.assertContains(saida, "Defesa: Armadura", "A ficha dos inimigos deve expor o tipo de defesa.");
     }
 
     private static void testarEfeitosDeStatus() {
@@ -279,6 +324,20 @@ public final class TestRunner {
 
     private static Jogador novoJogadorPadrao() {
         return new Jogador("Teste", new Arma[] { new Faca(), new Pistola() });
+    }
+
+    private static String capturarSaida(ThrowingRunnable runnable) throws Exception {
+        PrintStream saidaOriginal = System.out;
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+        try (PrintStream captura = new PrintStream(buffer)) {
+            System.setOut(captura);
+            runnable.run();
+        } finally {
+            System.setOut(saidaOriginal);
+        }
+
+        return buffer.toString();
     }
 
     private static final class TestCase {
@@ -452,6 +511,32 @@ public final class TestRunner {
         @Override
         protected boolean sortearChance(int chancePercentual) {
             return true;
+        }
+    }
+
+    private static final class ArmaFatal extends Arma {
+        private final int danoFixo;
+
+        private ArmaFatal(String nome, int danoFixo) {
+            super(nome, TipoArma.CURTA_DISTANCIA, danoFixo, 100, 0, 1.0);
+            this.danoFixo = danoFixo;
+        }
+
+        @Override
+        protected boolean tentouAcertar() {
+            return true;
+        }
+
+        @Override
+        protected int calcularDano(Criatura atacante) {
+            return this.danoFixo;
+        }
+    }
+
+    private static final class ControladorBatalhaProgramado extends ControladorBatalha {
+        @Override
+        public void executarTurnoJogador(Jogador jogador, Inimigo inimigo) {
+            jogador.atacarComArma(0, inimigo);
         }
     }
 }

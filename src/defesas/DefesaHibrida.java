@@ -28,4 +28,19 @@ public class DefesaHibrida extends Defesa {
         narrar("A defesa hibrida bloqueou parte do dano.");
         return danoFinal;
     }
+
+    @Override
+    public String getNomeExibicao() {
+        return "Defesa Hibrida";
+    }
+
+    @Override
+    public String getDescricao() {
+        return getNomeExibicao()
+            + " ("
+            + this.chanceEsquiva
+            + "% de esquiva ou reducao fixa de "
+            + this.reducao
+            + ")";
+    }
 }

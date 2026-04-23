@@ -13,4 +13,14 @@ public class Armadura extends Defesa {
         narrar("A armadura reduziu parte do dano.");
         return danoReduzido;
     }
+
+    @Override
+    public String getNomeExibicao() {
+        return "Armadura";
+    }
+
+    @Override
+    public String getDescricao() {
+        return getNomeExibicao() + " (" + this.porcentagemReducao + "% de reducao do dano)";
+    }
 }

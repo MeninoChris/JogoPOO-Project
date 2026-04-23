@@ -44,10 +44,25 @@ public abstract class Inimigo extends Criatura {
 
     public abstract int getExperienciaConcedida();
 
+    public String getResumoAtributos() {
+        return "vida inicial: "
+            + getVidaMaxima()
+            + ", ataque base: "
+            + getAtaqueBase()
+            + ", defesa: "
+            + this.defesa.getDescricao();
+    }
+
     public String getFichaCombate() {
         return getNome()
             + " - "
             + getTitulo()
+            + " | Vida inicial: "
+            + getVidaMaxima()
+            + " | Ataque base: "
+            + getAtaqueBase()
+            + " | Defesa: "
+            + this.defesa.getDescricao()
             + " | Perfil: "
             + getPerfilCombate()
             + " | Recompensa XP: "

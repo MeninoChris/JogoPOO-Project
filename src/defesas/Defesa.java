@@ -7,6 +7,14 @@ public class Defesa {
         return danoOriginal;
     }
 
+    public String getNomeExibicao() {
+        return "Defesa Simples";
+    }
+
+    public String getDescricao() {
+        return getNomeExibicao() + " (sem efeito adicional)";
+    }
+
     protected void narrar(String mensagem) {
         LogCombate.evento(mensagem);
     }

@@ -208,7 +208,6 @@ public class Jogador extends Criatura {
         this.recargaHabilidadeEspecial = 0;
         this.indiceArmaDeGuarda = 0;
         this.escudoTemporario = 0;
-        this.inventario.prepararParaNovaBatalha();
         removerEfeitosNegativos();
         restaurarVidaTotal();
     }

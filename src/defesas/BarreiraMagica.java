@@ -15,4 +15,14 @@ public class BarreiraMagica extends Defesa {
         }
         return danoOriginal;
     }
+
+    @Override
+    public String getNomeExibicao() {
+        return "Barreira Magica";
+    }
+
+    @Override
+    public String getDescricao() {
+        return getNomeExibicao() + " (limita cada golpe a " + this.limiteDano + " de dano)";
+    }
 }

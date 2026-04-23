@@ -36,7 +36,8 @@ public class Main {
             if (i < inimigos.length - 1) {
                 controladorBatalha.configurarArmaPrincipalEntreBatalhas(jogador);
                 LogCombate.secao("Transicao de Batalha");
-                LogCombate.evento("O jogador venceu e sera preparado para a proxima batalha.");
+                LogCombate.evento("O jogador venceu.");
+                LogCombate.evento("A vida sera restaurada para a proxima batalha e a municao restante sera mantida.");
                 jogador.prepararParaNovaBatalha();
             }
         }
