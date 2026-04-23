@@ -1,24 +1,25 @@
 package tests;
 
-import batalha.Batalha;
-import batalha.HistoricoBatalhas;
 import armas.base.Arma;
 import armas.base.TipoArma;
 import armas.curta.Faca;
 import armas.curta.LaminasGemeas;
 import armas.longa.LancaPerfurante;
 import armas.longa.Pistola;
+import campanha.Campanha;
 import controle.ControladorBatalha;
 import defesas.Armadura;
 import defesas.BarreiraMagica;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import personagens.Aetherion;
 import personagens.Criatura;
 import personagens.Demonium;
 import personagens.Inimigo;
 import personagens.Jogador;
 import personagens.Malignus;
 import personagens.Necrolis;
+import personagens.Vorgrath;
 import progressao.Talento;
 
 public final class TestRunner {
@@ -29,6 +30,7 @@ public final class TestRunner {
             new TestCase("progressao_e_talentos_por_ramo", TestRunner::testarProgressaoETalentosPorRamo),
             new TestCase("reset_entre_batalhas", TestRunner::testarResetEntreBatalhas),
             new TestCase("campanha_completa_e_historico", TestRunner::testarCampanhaCompletaEHistorico),
+            new TestCase("novos_inimigos", TestRunner::testarNovosInimigos),
             new TestCase("efeitos_de_status", TestRunner::testarEfeitosDeStatus),
             new TestCase("defesas_basicas", TestRunner::testarDefesasBasicas),
             new TestCase("armas_especiais", TestRunner::testarArmasEspeciais),
@@ -182,37 +184,36 @@ public final class TestRunner {
 
     private static void testarCampanhaCompletaEHistorico() throws Exception {
         Jogador jogador = new Jogador("Campanha", new Arma[] { new ArmaFatal("Espada de Teste", 2000), new Faca() });
-        Inimigo[] inimigos = new Inimigo[] { new Malignus(), new Demonium(), new Necrolis() };
-        HistoricoBatalhas historicoBatalhas = new HistoricoBatalhas();
+        Inimigo[] inimigos = Campanha.criarInimigosPadrao();
         ControladorBatalha controlador = new ControladorBatalhaProgramado();
+        Campanha campanha = new Campanha(controlador);
 
-        String saida = capturarSaida(() -> {
-            for (int i = 0; i < inimigos.length; i++) {
-                Batalha batalha = new Batalha(jogador, inimigos[i]);
-                historicoBatalhas.registrar(batalha);
-                batalha.executar(controlador);
-
-                if (!jogador.estaVivo()) {
-                    break;
-                }
-
-                if (i < inimigos.length - 1) {
-                    jogador.prepararParaNovaBatalha();
-                }
-            }
-
-            historicoBatalhas.exibirResumo();
-        });
+        String saida = capturarSaida(() -> campanha.executar(jogador, inimigos));
 
         Assertions.assertTrue(jogador.estaVivo(), "O jogador deve sobreviver ate o fim da campanha de teste.");
         Assertions.assertContains(saida, "Historico de batalhas:", "O historico final deve ser impresso.");
         Assertions.assertContains(saida, "1 - Batalha contra Malignus", "A primeira batalha deve aparecer no resumo.");
         Assertions.assertContains(saida, "2 - Batalha contra Demonium", "A segunda batalha deve aparecer no resumo.");
         Assertions.assertContains(saida, "3 - Batalha contra Necrolis", "A terceira batalha deve aparecer no resumo.");
+        Assertions.assertContains(saida, "4 - Batalha contra Vorgrath", "A quarta batalha deve aparecer no resumo.");
+        Assertions.assertContains(saida, "5 - Batalha contra Aetherion", "A quinta batalha deve aparecer no resumo.");
         Assertions.assertContains(saida, "vencedor: Campanha", "O vencedor de cada batalha deve ser registrado.");
         Assertions.assertContains(saida, "Vida inicial: 1000", "A ficha dos inimigos deve expor a vida inicial.");
         Assertions.assertContains(saida, "Ataque base: 50", "A ficha dos inimigos deve expor o ataque base.");
         Assertions.assertContains(saida, "Defesa: Armadura", "A ficha dos inimigos deve expor o tipo de defesa.");
+        Assertions.assertContains(saida, "Pressione Enter para iniciar a batalha contra Malignus.", "A batalha deve pedir confirmacao antes de comecar.");
+        Assertions.assertContains(saida, "Pressione Enter para iniciar a rodada 1.", "Cada rodada deve pedir confirmacao.");
+        Assertions.assertContains(saida, "Pressione Enter para seguir para a proxima batalha.", "A campanha deve pedir confirmacao nas transicoes.");
+    }
+
+    private static void testarNovosInimigos() {
+        Inimigo vorgrath = new Vorgrath();
+        Inimigo aetherion = new Aetherion();
+
+        Assertions.assertContains(vorgrath.getFichaCombate(), "Colosso da Ruina", "Vorgrath deve expor seu titulo.");
+        Assertions.assertContains(vorgrath.getFichaCombate(), "Defesa: Armadura", "Vorgrath deve expor sua defesa.");
+        Assertions.assertContains(aetherion.getFichaCombate(), "Arconte do Cosmo Partido", "Aetherion deve expor seu titulo.");
+        Assertions.assertContains(aetherion.getFichaCombate(), "Defesa: Barreira Magica", "Aetherion deve expor sua defesa.");
     }
 
     private static void testarEfeitosDeStatus() {
@@ -530,6 +531,11 @@ public final class TestRunner {
         @Override
         protected int calcularDano(Criatura atacante) {
             return this.danoFixo;
+        }
+
+        @Override
+        protected void aplicarDano(Criatura atacante, Criatura alvo, int dano) {
+            aplicarDanoIgnorandoDefesa(alvo, dano);
         }
     }
 

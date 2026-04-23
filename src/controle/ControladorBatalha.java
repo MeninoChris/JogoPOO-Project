@@ -43,6 +43,7 @@ public class ControladorBatalha {
         LogCombate.evento("Jogador " + nome + " preparado para a batalha.");
         Jogador jogador = new Jogador(nome, new Arma[] { armaCurta, armaLonga });
         exibirPreparacaoPreBatalha(jogador);
+        aguardarConfirmacao("finalizar a preparacao inicial");
         return jogador;
     }
 
@@ -79,6 +80,14 @@ public class ControladorBatalha {
                     break;
             }
         }
+    }
+
+    public void aguardarConfirmacao(String descricaoAcao) {
+        LogCombate.evento("Pressione Enter para " + descricaoAcao + ".");
+        if (this.scanner.hasNextLine()) {
+            this.scanner.nextLine();
+        }
+        LogCombate.espaco();
     }
 
     public void exibirPreviewProximoTier(Jogador jogador) {
@@ -165,6 +174,8 @@ public class ControladorBatalha {
         mostrarPromptEscolha(false);
 
         int escolha = lerEscolhaValida(1, inventario.getQuantidadeArmas());
+        Arma armaEscolhida = inventario.getArma(escolha - 1);
+        aguardarConfirmacao("atacar com " + armaEscolhida.getNomeExibicao());
         jogador.atacarComArma(escolha - 1, inimigo);
     }
 
@@ -180,7 +191,9 @@ public class ControladorBatalha {
         mostrarPromptEscolha(false);
 
         int escolha = lerEscolhaValida(1, itensDeCura.size());
-        jogador.usarConsumivel(itensDeCura.get(escolha - 1));
+        Consumivel consumivelEscolhido = itensDeCura.get(escolha - 1);
+        aguardarConfirmacao("usar " + consumivelEscolhido.getNomeExibicao());
+        jogador.usarConsumivel(consumivelEscolhido);
         return true;
     }
 
@@ -192,6 +205,8 @@ public class ControladorBatalha {
         mostrarPromptEscolha(false);
 
         int escolha = lerEscolhaValida(1, inventario.getQuantidadeArmas());
+        Arma armaEscolhida = inventario.getArma(escolha - 1);
+        aguardarConfirmacao("entrar em postura defensiva com " + armaEscolhida.getNomeExibicao());
         jogador.prepararDefesa(escolha - 1);
     }
 
@@ -208,6 +223,7 @@ public class ControladorBatalha {
                 return false;
             }
 
+            aguardarConfirmacao("usar Golpe Heroico");
             jogador.usarHabilidadeEspecial(inimigo);
             return true;
         }
@@ -223,7 +239,9 @@ public class ControladorBatalha {
         mostrarPromptEscolha(false);
 
         int itemEscolhido = lerEscolhaValida(1, itensDeBuff.size());
-        jogador.usarConsumivel(itensDeBuff.get(itemEscolhido - 1));
+        Consumivel consumivelEscolhido = itensDeBuff.get(itemEscolhido - 1);
+        aguardarConfirmacao("usar " + consumivelEscolhido.getNomeExibicao());
+        jogador.usarConsumivel(consumivelEscolhido);
         return true;
     }
 
@@ -392,6 +410,8 @@ public class ControladorBatalha {
             return;
         }
 
+        Arma armaEscolhida = inventario.getArma(escolha - 1);
+        aguardarConfirmacao("definir " + armaEscolhida.getNomeExibicao() + " como arma principal");
         inventario.definirArmaPrincipal(escolha - 1);
         LogCombate.evento("Nova arma principal definida com sucesso.");
         LogCombate.evento("Bonus da arma principal: " + jogador.getResumoBonusArmaPrincipal());

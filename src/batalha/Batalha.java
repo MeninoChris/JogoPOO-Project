@@ -29,9 +29,11 @@ public class Batalha {
 
         this.jogador.fraseApresentacao();
         this.inimigo.fraseApresentacao();
+        controladorBatalha.aguardarConfirmacao("iniciar a batalha contra " + this.inimigo.getNome());
 
         while (this.jogador.estaVivo() && this.inimigo.estaVivo()) {
             this.rodadas++;
+            controladorBatalha.aguardarConfirmacao("iniciar a rodada " + this.rodadas);
             LogCombate.subtitulo("Rodada " + this.rodadas);
 
             this.jogador.processarInicioTurno();
