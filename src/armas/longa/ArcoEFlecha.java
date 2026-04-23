@@ -3,8 +3,8 @@ package armas.longa;
 import armas.base.ArmaComMunicao;
 import armas.base.TipoArma;
 
-public class Arco_e_Flecha extends ArmaComMunicao {
-    public Arco_e_Flecha() {
+public class ArcoEFlecha extends ArmaComMunicao {
+    public ArcoEFlecha() {
         super("Arco e Flecha", TipoArma.LONGA_DISTANCIA, 150, 40, 25, 2.2, 8);
     }
 

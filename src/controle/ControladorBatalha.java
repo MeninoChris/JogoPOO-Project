@@ -9,7 +9,7 @@ import armas.curta.Espada;
 import armas.curta.Faca;
 import armas.curta.LaminasGemeas;
 import armas.curta.MachadoBerserker;
-import armas.longa.Arco_e_Flecha;
+import armas.longa.ArcoEFlecha;
 import armas.longa.LancaPerfurante;
 import armas.longa.Pistola;
 import inventario.Inventario;
@@ -431,7 +431,7 @@ public class ControladorBatalha {
         }
 
         return new Arma[] {
-            new Arco_e_Flecha(),
+            new ArcoEFlecha(),
             new Pistola(),
             new LancaPerfurante()
         };
