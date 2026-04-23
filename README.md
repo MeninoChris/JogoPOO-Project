@@ -357,4 +357,4 @@ out/
 
 ## Autor
 
-Projeto academico de jogo em Java baseado em combate por turnos.
+Christian Felix Leite
