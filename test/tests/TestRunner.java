@@ -6,6 +6,7 @@ import armas.curta.Faca;
 import armas.curta.LaminasGemeas;
 import armas.longa.LancaPerfurante;
 import armas.longa.Pistola;
+import batalha.ArenaBatalhas;
 import campanha.Campanha;
 import controle.ControladorBatalha;
 import defesas.Armadura;
@@ -29,7 +30,8 @@ public final class TestRunner {
         TestCase[] tests = new TestCase[] {
             new TestCase("progressao_e_talentos_por_ramo", TestRunner::testarProgressaoETalentosPorRamo),
             new TestCase("reset_entre_batalhas", TestRunner::testarResetEntreBatalhas),
-            new TestCase("campanha_completa_e_historico", TestRunner::testarCampanhaCompletaEHistorico),
+            new TestCase("campanha_completa_historia_recompensas", TestRunner::testarCampanhaCompletaEHistorico),
+            new TestCase("modo_batalhas_arena", TestRunner::testarModoBatalhasArena),
             new TestCase("novos_inimigos", TestRunner::testarNovosInimigos),
             new TestCase("efeitos_de_status", TestRunner::testarEfeitosDeStatus),
             new TestCase("defesas_basicas", TestRunner::testarDefesasBasicas),
@@ -184,13 +186,15 @@ public final class TestRunner {
 
     private static void testarCampanhaCompletaEHistorico() throws Exception {
         Jogador jogador = new Jogador("Campanha", new Arma[] { new ArmaFatal("Espada de Teste", 2000), new Faca() });
-        Inimigo[] inimigos = Campanha.criarInimigosPadrao();
         ControladorBatalha controlador = new ControladorBatalhaProgramado();
         Campanha campanha = new Campanha(controlador);
 
-        String saida = capturarSaida(() -> campanha.executar(jogador, inimigos));
+        String saida = capturarSaida(() -> campanha.executarCampanhaPadrao(jogador));
 
         Assertions.assertTrue(jogador.estaVivo(), "O jogador deve sobreviver ate o fim da campanha de teste.");
+        Assertions.assertContains(saida, "Capitulo 1 de 5 - Sangue no Portao Negro", "A campanha deve abrir com o primeiro capitulo.");
+        Assertions.assertContains(saida, "Capitulo 5 de 5 - Firmamento Partido", "A campanha deve chegar ao capitulo final.");
+        Assertions.assertContains(saida, "Recompensas da Campanha", "A campanha deve premiar o jogador entre capitulos.");
         Assertions.assertContains(saida, "Historico de batalhas:", "O historico final deve ser impresso.");
         Assertions.assertContains(saida, "1 - Batalha contra Malignus", "A primeira batalha deve aparecer no resumo.");
         Assertions.assertContains(saida, "2 - Batalha contra Demonium", "A segunda batalha deve aparecer no resumo.");
@@ -201,9 +205,40 @@ public final class TestRunner {
         Assertions.assertContains(saida, "Vida inicial: 1000", "A ficha dos inimigos deve expor a vida inicial.");
         Assertions.assertContains(saida, "Ataque base: 50", "A ficha dos inimigos deve expor o ataque base.");
         Assertions.assertContains(saida, "Defesa: Armadura", "A ficha dos inimigos deve expor o tipo de defesa.");
+        Assertions.assertContains(
+            saida,
+            "Recebeu: Pocao de Cura - Recupera 180 de vida e concede 80 de escudo temporario",
+            "A campanha deve dar itens de recompensa."
+        );
+        Assertions.assertContains(
+            saida,
+            "A campanha foi concluida e a linha dos bosses foi quebrada.",
+            "A campanha deve encerrar com texto de vitoria."
+        );
         Assertions.assertContains(saida, "Pressione Enter para iniciar a batalha contra Malignus.", "A batalha deve pedir confirmacao antes de comecar.");
         Assertions.assertContains(saida, "Pressione Enter para iniciar a rodada 1.", "Cada rodada deve pedir confirmacao.");
-        Assertions.assertContains(saida, "Pressione Enter para seguir para a proxima batalha.", "A campanha deve pedir confirmacao nas transicoes.");
+        Assertions.assertContains(saida, "Pressione Enter para seguir para o proximo capitulo.", "A campanha deve pedir confirmacao nas transicoes.");
+        Assertions.assertTrue(
+            jogador.getInventario().getQuantidadeArmas() >= 6,
+            "A campanha deve liberar armas gradualmente conforme os niveis sobem."
+        );
+        Assertions.assertTrue(
+            jogador.getInventario().getConsumiveis().size() > 5,
+            "As recompensas da campanha devem aumentar o inventario de consumiveis."
+        );
+    }
+
+    private static void testarModoBatalhasArena() throws Exception {
+        Jogador jogador = new Jogador("Arena", new Arma[] { new ArmaFatal("Machado de Arena", 2000), new Faca() });
+        ArenaBatalhas arenaBatalhas = new ArenaBatalhas(new ControladorArenaProgramado());
+
+        String saida = capturarSaida(() -> arenaBatalhas.executar(jogador));
+
+        Assertions.assertTrue(jogador.estaVivo(), "O jogador deve sobreviver ao confronto da arena de teste.");
+        Assertions.assertContains(saida, "Arena de Batalhas", "O modo batalha deve ter uma abertura propria.");
+        Assertions.assertContains(saida, "Escolha do Desafio", "A arena deve oferecer um menu de boss.");
+        Assertions.assertContains(saida, "1 - Batalha contra Malignus", "A arena deve registrar a batalha no historico.");
+        Assertions.assertContains(saida, "Encerramento da Arena", "A arena deve exibir seu fechamento.");
     }
 
     private static void testarNovosInimigos() {
@@ -544,5 +579,29 @@ public final class TestRunner {
         public void executarTurnoJogador(Jogador jogador, Inimigo inimigo) {
             jogador.atacarComArma(0, inimigo);
         }
+    }
+
+    private static final class ControladorArenaProgramado extends ControladorBatalha {
+        @Override
+        public void aguardarConfirmacao(String descricaoAcao) {}
+
+        @Override
+        public void executarTurnoJogador(Jogador jogador, Inimigo inimigo) {
+            jogador.atacarComArma(0, inimigo);
+        }
+
+        @Override
+        public boolean desejaContinuarNaArena(int chefesDerrotados, int totalChefes) {
+            return false;
+        }
+
+        @Override
+        public void exibirPreviewProximoTier(Jogador jogador) {}
+
+        @Override
+        public void processarEvolucao(Jogador jogador) {}
+
+        @Override
+        public void configurarArmaPrincipalEntreBatalhas(Jogador jogador) {}
     }
 }

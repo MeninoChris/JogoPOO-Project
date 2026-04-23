@@ -22,10 +22,25 @@ import progressao.AtributoEvolutivo;
 import progressao.Talento;
 
 public class ControladorBatalha {
+    public static final int MODO_BATALHAS = 1;
+    public static final int MODO_CAMPANHA = 2;
+
     private final Scanner scanner;
 
     public ControladorBatalha() {
         this.scanner = new Scanner(System.in);
+    }
+
+    public int escolherModoJogo() {
+        LogCombate.secao("Menu Inicial");
+        LogCombate.evento("Escolha o modo de jogo:");
+        LogCombate.evento("1 - Batalhas");
+        LogCombate.evento("2 - Campanha");
+        LogCombate.evento("Batalhas: arena livre, com ordem dos bosses escolhida por voce.");
+        LogCombate.evento("Campanha: jornada guiada com historia, capitulos e recompensas narrativas.");
+        mostrarPromptEscolha(false);
+
+        return lerEscolhaValida(1, 2, MODO_CAMPANHA);
     }
 
     public Jogador configurarJogador() {
@@ -80,6 +95,46 @@ public class ControladorBatalha {
                     break;
             }
         }
+    }
+
+    public int escolherDesafioArena(Inimigo[] inimigos, boolean[] chefesDerrotados) {
+        LogCombate.secao("Escolha do Desafio");
+        LogCombate.evento("Chefes derrotados: " + contarChefesDerrotados(chefesDerrotados) + "/" + inimigos.length);
+        LogCombate.evento("0 - Encerrar a run na arena");
+
+        int[] mapaIndices = new int[inimigos.length];
+        int quantidadeDisponivel = 0;
+        for (int i = 0; i < inimigos.length; i++) {
+            if (chefesDerrotados[i]) {
+                continue;
+            }
+
+            mapaIndices[quantidadeDisponivel] = i;
+            quantidadeDisponivel++;
+            LogCombate.evento(quantidadeDisponivel + " - " + inimigos[i].getFichaCombate());
+        }
+
+        if (quantidadeDisponivel == 0) {
+            return -1;
+        }
+
+        mostrarPromptEscolha(true);
+        int escolha = lerEscolhaValida(0, quantidadeDisponivel, 1);
+        if (escolha == 0) {
+            LogCombate.evento("Run da arena encerrada pelo jogador.");
+            return -1;
+        }
+
+        return mapaIndices[escolha - 1];
+    }
+
+    public boolean desejaContinuarNaArena(int chefesDerrotados, int totalChefes) {
+        LogCombate.secao("Progresso da Arena");
+        LogCombate.evento("Chefes derrotados: " + chefesDerrotados + "/" + totalChefes);
+        LogCombate.evento("1 - Continuar na arena");
+        LogCombate.evento("2 - Encerrar a run atual");
+        mostrarPromptEscolha(false);
+        return lerEscolhaValida(1, 2, 1) == 1;
     }
 
     public void aguardarConfirmacao(String descricaoAcao) {
@@ -447,9 +502,12 @@ public class ControladorBatalha {
     }
 
     private int lerEscolhaValida(int minimo, int maximo) {
+        return lerEscolhaValida(minimo, maximo, minimo == 0 ? 0 : 1);
+    }
+
+    private int lerEscolhaValida(int minimo, int maximo, int escolhaPadrao) {
         while (true) {
             if (!this.scanner.hasNextLine()) {
-                int escolhaPadrao = minimo == 0 ? 0 : 1;
                 LogCombate.evento("Entrada encerrada. Selecionando a opcao padrao automaticamente.");
                 LogCombate.espaco();
                 return escolhaPadrao;
@@ -488,5 +546,15 @@ public class ControladorBatalha {
     private String normalizarTexto(String texto) {
         String textoNormalizado = texto.replace("\uFEFF", "").trim();
         return textoNormalizado.replaceAll("\\p{Cntrl}", "");
+    }
+
+    private int contarChefesDerrotados(boolean[] chefesDerrotados) {
+        int total = 0;
+        for (boolean chefeDerrotado : chefesDerrotados) {
+            if (chefeDerrotado) {
+                total++;
+            }
+        }
+        return total;
     }
 }

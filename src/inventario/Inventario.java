@@ -77,14 +77,12 @@ public class Inventario {
         this.consumiveis.remove(consumivel);
     }
 
-    public List<Consumivel> getConsumiveis() {
-        return new ArrayList<>(this.consumiveis);
+    public void adicionarConsumivel(Consumivel consumivel) {
+        this.consumiveis.add(consumivel);
     }
 
-    public void prepararParaNovaBatalha() {
-        for (Arma arma : this.armas) {
-            arma.prepararParaNovaBatalha();
-        }
+    public List<Consumivel> getConsumiveis() {
+        return new ArrayList<>(this.consumiveis);
     }
 
     public void definirArmaPrincipal(int indice) {

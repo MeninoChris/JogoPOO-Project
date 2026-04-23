@@ -28,7 +28,6 @@ public class ProgressaoJogador {
     private final EnumSet<Talento> talentos;
     private int nivel;
     private int experienciaAtual;
-    private int experienciaTotal;
     private int experienciaProximoNivel;
     private int pontosAtributoDisponiveis;
     private int pontosTalentoDisponiveis;
@@ -111,7 +110,6 @@ public class ProgressaoJogador {
     public int ganharExperiencia(Jogador jogador, Inventario inventario, int experiencia) {
         int niveisGanhos = 0;
         this.experienciaAtual += experiencia;
-        this.experienciaTotal += experiencia;
         jogador.narrar("ganhou " + experiencia + " de experiencia.");
 
         while (this.experienciaAtual >= this.experienciaProximoNivel) {
@@ -126,14 +124,6 @@ public class ProgressaoJogador {
 
     public int getNivel() {
         return this.nivel;
-    }
-
-    public int getExperienciaAtual() {
-        return this.experienciaAtual;
-    }
-
-    public int getExperienciaProximoNivel() {
-        return this.experienciaProximoNivel;
     }
 
     public int getPontosAtributoDisponiveis() {

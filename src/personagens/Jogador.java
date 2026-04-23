@@ -120,18 +120,6 @@ public class Jogador extends Criatura {
         this.progressao.adicionarBonusCritico(this, bonusChanceCritico, bonusMultiplicadorCritico);
     }
 
-    public int getBonusDano() {
-        return this.progressao.getBonusDano();
-    }
-
-    public int getBonusChanceCritico() {
-        return this.progressao.getBonusChanceCritico();
-    }
-
-    public double getBonusMultiplicadorCritico() {
-        return this.progressao.getBonusMultiplicadorCritico();
-    }
-
     @Override
     public void fraseApresentacao() {
         falar("Nao contava com minha astucia!");
@@ -156,14 +144,6 @@ public class Jogador extends Criatura {
 
     public int getNivel() {
         return this.progressao.getNivel();
-    }
-
-    public int getExperienciaAtual() {
-        return this.progressao.getExperienciaAtual();
-    }
-
-    public int getExperienciaProximoNivel() {
-        return this.progressao.getExperienciaProximoNivel();
     }
 
     public int getPontosAtributoDisponiveis() {

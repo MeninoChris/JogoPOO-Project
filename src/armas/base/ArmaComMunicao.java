@@ -33,11 +33,6 @@ public abstract class ArmaComMunicao extends Arma {
     }
 
     @Override
-    protected String getDescricaoEfeitoEspecial() {
-        return super.getDescricaoEfeitoEspecial();
-    }
-
-    @Override
     protected String getDescricaoMunicao() {
         return "Municao = " + this.municao + "/" + this.municaoMaxima;
     }
@@ -52,8 +47,4 @@ public abstract class ArmaComMunicao extends Arma {
         return this.municao + "/" + this.municaoMaxima;
     }
 
-    @Override
-    public void prepararParaNovaBatalha() {
-        this.municao = this.municaoMaxima;
-    }
 }

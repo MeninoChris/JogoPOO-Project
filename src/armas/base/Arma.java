@@ -216,8 +216,6 @@ public abstract class Arma {
         return "Municao = infinita";
     }
 
-    public void prepararParaNovaBatalha() {}
-
     private int getChanceAcertoFinal(Criatura atacante) {
         int chanceFinal = this.chance;
         if (atacante instanceof Jogador jogador) {
